@@ -15,8 +15,12 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/library/", include("library.urls", namespace="library")),
+    path("api/users/", include("users.urls", namespace="users")),
+    path("", RedirectView.as_view(url="/api/library/books/", permanent=False)),
 ]
