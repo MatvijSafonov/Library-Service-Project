@@ -10,10 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
+from dotenv import load_dotenv
 from datetime import timedelta
 from pathlib import Path
-
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -41,8 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rest_framework_simplejwt",
     # 3rd party apps
+    "rest_framework_simplejwt",
     "rest_framework",
     # local apps
     "library",
