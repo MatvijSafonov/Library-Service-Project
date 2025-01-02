@@ -12,7 +12,7 @@ class BookSerializer(serializers.ModelSerializer):
             "author",
             "cover",
             "inventory",
-            "dayly_fee",
+            "daily_fee",
         )
 
 class BookListSerializer(serializers.ModelSerializer):
@@ -30,5 +30,5 @@ class BookDetailSerializer(BookSerializer):
             "title",
             "author",
             "inventory",
-            "dayly_fee",
+            "daily_fee",
         )
