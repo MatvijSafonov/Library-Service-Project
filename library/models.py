@@ -11,7 +11,7 @@ class Book(models.Model):
     author = models.CharField(max_length=63)
     cover = models.CharField(choices=COVER_CHOICES, max_length=7)
     inventory = models.PositiveIntegerField()
-    dayly_fee = models.DecimalField(max_digits=5, decimal_places=2)
+    daily_fee = models.DecimalField(max_digits=5, decimal_places=2)
 
     class Meta:
         ordering = ("title",)
