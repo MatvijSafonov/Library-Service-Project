@@ -4,8 +4,8 @@ from rest_framework.request import Request
 
 class IsAdminOrReadOnly(BasePermission):
     """
-    Only admin users can create/update/delete books
-    All users (even unauthenticated ones) should be able to list books
+    Only admin user can create/update/delete books
+    All user (even unauthenticated ones) should be able to list books
     """
     def has_permission(
             self,
