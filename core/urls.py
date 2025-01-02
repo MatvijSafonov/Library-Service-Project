@@ -21,6 +21,6 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/library/", include("library.urls", namespace="library")),
-    path("api/users/", include("users.urls", namespace="users")),
+    path("api/user/", include("user.urls", namespace="user")),
     path("", RedirectView.as_view(url="/api/library/books/", permanent=False)),
 ]

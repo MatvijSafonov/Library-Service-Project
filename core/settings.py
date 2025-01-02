@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "rest_framework",
     # local apps
     "library",
-    "users",
+    "user",
 ]
 
 MIDDLEWARE = [
@@ -144,4 +144,4 @@ SIMPLE_JWT = {
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZE",
 }
 
-AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "user.User"
