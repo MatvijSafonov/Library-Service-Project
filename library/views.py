@@ -1,7 +1,12 @@
 from rest_framework import viewsets
 
-from library.models import Book
-from library.serializers import BookSerializer, BookDetailSerializer, BookListSerializer
+from library.models import Book, Author
+from library.serializers import (
+    BookSerializer,
+    BookDetailSerializer,
+    BookListSerializer,
+    AuthorSerializer,
+)
 
 
 class BookViewSet(viewsets.ModelViewSet):
@@ -13,3 +18,8 @@ class BookViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return BookDetailSerializer
         return BookSerializer
+
+
+class AuthorViewSet(viewsets.ModelViewSet):
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
