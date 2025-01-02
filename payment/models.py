@@ -4,6 +4,8 @@ from borrowing.models import Borrowing
 
 
 class Payment(models.Model):
+    """Model representing a payment in the system."""
+
     class StatusChoices(models.TextChoices):
         PENDING = "PENDING", "Pending"
         PAID = "PAID", "Paid"
