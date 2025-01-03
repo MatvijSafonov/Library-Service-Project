@@ -11,11 +11,11 @@ class BorrowingSerializer(serializers.ModelSerializer):
         model = Borrowing
         fields = (
             "id",
-            "user_id",
+            "user",
             "borrow_date",
             "expected_return_date",
             "actual_return_date",
-            "book_id",
+            "book",
         )
         read_only_fields = ("actual_return_date",)
 
@@ -32,15 +32,15 @@ class BorrowingSerializer(serializers.ModelSerializer):
 
 
 class BorrowingDetailSerializer(BorrowingSerializer):
-    book_id = BookBorrowingSerializer(read_only=True)
+    book = BookBorrowingSerializer(read_only=True)
 
     class Meta:
         model = Borrowing
         fields = (
             "id",
-            "user_id",
+            "user",
             "borrow_date",
             "expected_return_date",
             "actual_return_date",
-            "book_id",
+            "book",
         )

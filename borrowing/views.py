@@ -24,7 +24,7 @@ class BorrowingPagination(PageNumberPagination):
 class BorrowingViewSet(viewsets.ModelViewSet):
     queryset = Borrowing.objects.all()
     serializer_class = BorrowingSerializer
-    permission_classes = (IsAuthenticated, )
+    # permission_classes = (IsAuthenticated, )
     pagination_class = BorrowingPagination
 
     def get_serializer_class(self) -> Type[Serializer]:
