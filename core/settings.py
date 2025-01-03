@@ -52,7 +52,9 @@ INSTALLED_APPS = [
     # local apps
     "library",
     "user",
-    "borrowing"
+    "borrowing",
+    "payment",
+    "notification",
 ]
 
 MIDDLEWARE = [
