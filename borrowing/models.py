@@ -34,3 +34,4 @@ class Borrowing(models.Model):
 
     def __str__(self):
         return f"ID - {self.id} ({self.borrow_date} - {self.expected_return_date})"
+

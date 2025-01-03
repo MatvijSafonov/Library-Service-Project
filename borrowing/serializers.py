@@ -1,8 +1,9 @@
-from django.db import transaction
+from datetime import date
 from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
 
+from library.serializers import BookBorrowingSerializer
 from borrowing.models import Borrowing
-
 
 class BorrowingSerializer(serializers.ModelSerializer):
 
@@ -10,41 +11,36 @@ class BorrowingSerializer(serializers.ModelSerializer):
         model = Borrowing
         fields = (
             "id",
+            "user_id",
             "borrow_date",
             "expected_return_date",
             "actual_return_date",
-            "book",
-            "user"
+            "book_id",
         )
+        read_only_fields = ("actual_return_date",)
+
+    def validate(self, data):
+        borrow_date = date.today()
+        expected_return_date = data.get("expected_return_date")
+
+        if expected_return_date and borrow_date and expected_return_date < borrow_date:
+            raise serializers.ValidationError(_(
+                "Expected return date should be greater than borrow date."
+            ))
+
+        return data
 
 
-class BorrowingCreateSerializer(serializers.ModelSerializer):
+class BorrowingDetailSerializer(BorrowingSerializer):
+    book_id = BookBorrowingSerializer(read_only=True)
+
     class Meta:
         model = Borrowing
         fields = (
             "id",
+            "user_id",
+            "borrow_date",
             "expected_return_date",
-            "book",
+            "actual_return_date",
+            "book_id",
         )
-
-    def validate(self, data):
-        """
-        Validate book inventory is not 0.
-        """
-        if data["book"].inventory == 0:
-            raise serializers.ValidationError(
-                "There are currently no such books available."
-            )
-        return data
-
-    def create(self, validated_data):
-        """
-        Create borrowing and decrease inventory by 1 for book.
-        """
-        with transaction.atomic():
-            book = validated_data["book"]
-            book.inventory -= 1
-            book.save()
-
-            borrowing = Borrowing.objects.create(**validated_data)
-            return borrowing
