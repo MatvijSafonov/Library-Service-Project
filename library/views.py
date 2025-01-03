@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 
 from library.models import Book, Author
+from library.permissions import IsAdminOrReadOnly
 from library.serializers import (
     BookSerializer,
     BookDetailSerializer,
@@ -11,6 +12,7 @@ from library.serializers import (
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.action == "list":
