@@ -5,6 +5,7 @@ from borrowing.models import Borrowing
 
 
 class BorrowingSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Borrowing
         fields = (
