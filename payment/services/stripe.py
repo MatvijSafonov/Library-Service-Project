@@ -25,16 +25,16 @@ class StripeService:
         request: Request,
     ) -> tuple[str, str]:
         """Create new Stripe payment session for payment processing."""
-        success_url = request.build_absolute_uri(
+        base_success_url = request.build_absolute_uri(
             reverse("payment:payment-success")
-            + f"?session_id={{CHECKOUT_SESSION_ID}}&payment_id={payment_id}"
         )
-        cancel_url = request.build_absolute_uri(
-            reverse("payment:payment-cancel")
-            + f"?session_id={{CHECKOUT_SESSION_ID}}&payment_id={payment_id}"
-        )
+        success_url = f"{base_success_url}?payment_id={payment_id}"
+
+        base_cancel_url = request.build_absolute_uri(reverse("payment:payment-cancel"))
+        cancel_url = f"{base_cancel_url}?payment_id={payment_id}"
 
         amount_cents = int(amount * 100)
+        expires_at = int(time.time() + 30 * 60)
 
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -51,9 +51,9 @@ class StripeService:
                 }
             ],
             mode="payment",
-            success_url=success_url,
-            cancel_url=cancel_url,
-            expires_at=int(time.time() + self.PAYMENT_EXPIRATION_HOURS * 3600),
+            success_url=success_url + "&session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=cancel_url + "&session_id={CHECKOUT_SESSION_ID}",
+            expires_at=expires_at,
         )
         return session.url, session.id
 

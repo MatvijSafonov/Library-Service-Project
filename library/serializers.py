@@ -46,9 +46,10 @@ class BookDetailSerializer(BookSerializer):
             "daily_fee",
         )
 
+
 class BookBorrowingSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer(many=True, read_only=True)
+    author = AuthorSerializer(read_only=True)
 
     class Meta:
         model = Book
-        fields = ("title", "author",)
+        fields = ("id", "title", "author", "daily_fee")

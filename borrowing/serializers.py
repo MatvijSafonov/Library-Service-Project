@@ -11,19 +11,23 @@ class BorrowingSerializer(serializers.ModelSerializer):
         model = Borrowing
         fields = (
             "id",
-            "user_id",
+            "user",
             "borrow_date",
             "expected_return_date",
             "actual_return_date",
-            "book_id",
+            "book",
         )
-        read_only_fields = ("actual_return_date",)
+        read_only_fields = (
+            "user",
+            "borrow_date",
+            "actual_return_date",
+        )
 
     def validate(self, data):
         borrow_date = date.today()
         expected_return_date = data.get("expected_return_date")
 
-        if expected_return_date and borrow_date and expected_return_date < borrow_date:
+        if expected_return_date and expected_return_date < borrow_date:
             raise serializers.ValidationError(_(
                 "Expected return date should be greater than borrow date."
             ))
@@ -32,15 +36,15 @@ class BorrowingSerializer(serializers.ModelSerializer):
 
 
 class BorrowingDetailSerializer(BorrowingSerializer):
-    book_id = BookBorrowingSerializer(read_only=True)
+    book = BookBorrowingSerializer(read_only=True)
 
     class Meta:
         model = Borrowing
         fields = (
             "id",
-            "user_id",
+            "user",
             "borrow_date",
             "expected_return_date",
             "actual_return_date",
-            "book_id",
+            "book",
         )
