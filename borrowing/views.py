@@ -1,8 +1,10 @@
 import datetime
 from typing import Type
 
-from rest_framework import viewsets
+import stripe
+from rest_framework import status, viewsets
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.request import Request
 from rest_framework.serializers import Serializer
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -12,8 +14,9 @@ from rest_framework.decorators import action
 from borrowing.models import Borrowing
 from borrowing.serializers import (
     BorrowingSerializer,
-    BorrowingDetailSerializer
+    BorrowingDetailSerializer,
 )
+from payment.services.payment import PaymentService
 
 
 class BorrowingPagination(PageNumberPagination):
@@ -23,18 +26,15 @@ class BorrowingPagination(PageNumberPagination):
 
 class BorrowingViewSet(viewsets.ModelViewSet):
     queryset = Borrowing.objects.all()
-    serializer_class = BorrowingSerializer
-    permission_classes = (IsAuthenticated, )
+    permission_classes = [IsAuthenticated]
     pagination_class = BorrowingPagination
+    payment_service = PaymentService()
 
     def get_serializer_class(self) -> Type[Serializer]:
-        if self.action == "list":
-            return BorrowingSerializer
-
         if self.action == "retrieve":
             return BorrowingDetailSerializer
 
-        return self.serializer_class
+        return BorrowingSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -58,14 +58,41 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         if Borrowing.objects.filter(user=user, actual_return_date=None).exists():
             raise ValidationError("You already have an active borrowing.")
 
-        books = serializer.validated_data.get("book")
-        for book in books:
-            if book.inventory == 0:
-                raise ValidationError("Book inventory is 0.")
-            book.inventory -= 1
-            book.save()
+        book = serializer.validated_data.get("book")
 
-        serializer.save(user=user)
+        if not book:
+            raise ValidationError("Book is required")
+
+        if book.inventory == 0:
+            raise ValidationError(
+                f'Book "{book.title}" is not available (inventory is 0)'
+            )
+
+        book.inventory -= 1
+        book.save(update_fields=["inventory"])
+
+        borrowing = serializer.save(user=user)
+
+        try:
+            payment = self.payment_service.create_payment_for_borrowing(
+                borrowing=borrowing,
+                request=self.request,
+            )
+            self.payment_session_url = payment.session_url
+        except stripe.error.StripeError as error:
+            book.inventory += 1
+            book.save(update_fields=["inventory"])
+            borrowing.delete()
+            raise ValidationError(f"Failed to create payment: {str(error)}")
+
+    def create(self, request: Request, *args, **kwargs) -> Response:
+        """Create borrowing with payment session URL in response."""
+        response = super().create(request, *args, **kwargs)
+
+        if response.status_code == status.HTTP_201_CREATED:
+            response.data["payment_url"] = self.payment_session_url
+
+        return response
 
     @action(detail=True, methods=["GET", "POST"])
     def return_borrowing(self, request, pk=None):
@@ -77,8 +104,11 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         borrowing.actual_return_date = datetime.date.today()
         borrowing.save()
 
-        for book in borrowing.book.all():
-            book.inventory += 1
-            book.save()
+        book = borrowing.book
+        book.inventory += 1
+        book.save(update_fields=["inventory"])
 
-        return Response("Borrowing returned successfully.")
+        return Response(
+            {"message": "Borrowing returned successfully."},
+            status=status.HTTP_200_OK,
+        )
