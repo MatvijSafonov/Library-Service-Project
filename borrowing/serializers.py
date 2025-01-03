@@ -3,10 +3,11 @@ from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 
 from library.serializers import BookBorrowingSerializer
-from .models import Borrowing
+from borrowing.models import Borrowing
 
 
 class BorrowingSerializer(serializers.ModelSerializer):
+
     user_id = serializers.CharField(source="user.email", read_only=True)
     book_id = serializers.CharField(source="book.title", read_only=True)
 

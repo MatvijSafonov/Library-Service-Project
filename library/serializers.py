@@ -26,6 +26,7 @@ class BookSerializer(serializers.ModelSerializer):
             "daily_fee",
         )
 
+
 class BookListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
@@ -33,6 +34,7 @@ class BookListSerializer(serializers.ModelSerializer):
             "title",
             "author",
         )
+
 
 class BookDetailSerializer(BookSerializer):
     class Meta:
