@@ -1,6 +1,21 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from borrowing.models import Borrowing
+
+
+class BorrowingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Borrowing
+        fields = (
+            "id",
+            "borrow_date",
+            "expected_return_date",
+            "actual_return_date",
+            "book",
+            "user"
+        )
+
 
 class BorrowingCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,7 +32,7 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         """
         if data["book"].inventory == 0:
             raise serializers.ValidationError(
-                "This book is not available for borrowing."
+                "There are currently no such books available."
             )
         return data
 
