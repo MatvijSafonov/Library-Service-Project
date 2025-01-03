@@ -4,14 +4,14 @@ from rest_framework import routers
 from .views import BorrowingViewSet
 
 router = routers.SimpleRouter()
-router.register("", BorrowingViewSet)
+router.register("", BorrowingViewSet, basename="borrowing")
 
 urlpatterns = [
     path("", include(router.urls)),
     path(
-        "borrowing/<int:pk>/return_borrowing/",
+        "<int:pk>/return/",
         BorrowingViewSet.as_view({"post": "return_borrowing"}),
-        name="return_borrowing"
+        name="borrowing-return"
     ),
 ]
 

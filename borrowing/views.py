@@ -1,10 +1,12 @@
-import datetime
 from typing import Type
 
-from rest_framework import viewsets
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework import viewsets, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.serializers import Serializer
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -58,27 +60,44 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         if Borrowing.objects.filter(user=user, actual_return_date=None).exists():
             raise ValidationError("You already have an active borrowing.")
 
-        books = serializer.validated_data.get("book")
-        for book in books:
+            book = serializer.validated_data.get("book")
             if book.inventory == 0:
                 raise ValidationError("Book inventory is 0.")
+
             book.inventory -= 1
             book.save()
+            serializer.save(user=user)
 
-        serializer.save(user=user)
-
-    @action(detail=True, methods=["GET", "POST"])
+    @action(
+        detail=True,
+        methods=["POST"],
+        url_path="return"
+    )
     def return_borrowing(self, request, pk=None):
-        borrowing = self.get_object()
+        """
+        Return a borrowed book and update inventory
+        """
+        borrowing = get_object_or_404(Borrowing, pk=pk)
 
         if borrowing.actual_return_date:
-            raise ValidationError("This borrowing has already been returned.")
+            return Response(
+                {"detail": "This book has already been returned."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        borrowing.actual_return_date = datetime.date.today()
-        borrowing.save()
+        if not request.user.is_staff and borrowing.user != request.user:
+            raise PermissionDenied(
+                "You don't have permission to return this book."
+            )
 
-        for book in borrowing.book.all():
-            book.inventory += 1
-            book.save()
+        with transaction.atomic():
+            borrowing.actual_return_date = timezone.now().date()
+            borrowing.book.inventory += 1
+            borrowing.book.save()
+            borrowing.save()
 
-        return Response("Borrowing returned successfully.")
+        return Response(
+            {"detail": "Borrowing returned successfully."},
+            status=status.HTTP_200_OK
+        )
+
