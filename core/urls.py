@@ -23,6 +23,7 @@ urlpatterns = [
     path("api/library/", include("library.urls", namespace="library")),
     path("api/users/", include("user.urls", namespace="user")),
     path("api/payments/", include("payment.urls", namespace="payment")),
+    path("api/borrowings/", include("borrowing.urls", namespace="borrowing")),
     path("", RedirectView.as_view(url="/api/library/books/", permanent=False)),
     path("__debug__/", include("debug_toolbar.urls")),
 ]
