@@ -1,17 +1,25 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 from .models import Author, Book
-from .serializers import AuthorSerializer, BookSerializer, BookListSerializer, BookDetailSerializer
+from .serializers import (AuthorSerializer,
+                          BookSerializer,
+                          BookListSerializer,
+                          BookDetailSerializer)
 
 
 class AuthorTestCase(TestCase):
 
     def setUp(self):
-        self.author1 = Author.objects.create(first_name="John", last_name="Doe")
-        self.author2 = Author.objects.create(first_name="Jane", last_name="Doe")
-        self.author3 = Author.objects.create(first_name="John", last_name="Smith", pseudonym="Johnny")
+        self.author1 = Author.objects.create(first_name="John",
+                                             last_name="Doe")
+        self.author2 = Author.objects.create(first_name="Jane",
+                                             last_name="Doe")
+        self.author3 = Author.objects.create(first_name="John",
+                                             last_name="Smith",
+                                             pseudonym="Johnny")
 
     def test_full_name_method(self):
         self.assertEqual(self.author1.full_name(), "John Doe")
@@ -36,7 +44,7 @@ class AuthorTestCase(TestCase):
 
     def test_author_api(self):
         client = APIClient()
-        url = reverse('library:author-list')
+        url = reverse("library:author-list")
         response = client.post(url, {
             "first_name": "George",
             "last_name": "Orwell",
@@ -48,12 +56,17 @@ class AuthorTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 4)
 
+
 class BookTestCase(TestCase):
 
     def setUp(self):
-        self.author1 = Author.objects.create(first_name="John", last_name="Doe")
-        self.author2 = Author.objects.create(first_name="Jane", last_name="Doe")
-        self.author3 = Author.objects.create(first_name="John", last_name="Smith", pseudonym="Johnny")
+        self.author1 = Author.objects.create(first_name="John",
+                                             last_name="Doe")
+        self.author2 = Author.objects.create(first_name="Jane",
+                                             last_name="Doe")
+        self.author3 = Author.objects.create(first_name="John",
+                                             last_name="Smith",
+                                             pseudonym="Johnny")
 
         self.book1 = Book.objects.create(
             title="Book One",
