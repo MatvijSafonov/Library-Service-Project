@@ -40,4 +40,4 @@ class Payment(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
-        return f"{self.type} payment for {self.borrowing} - {self.status}"
+        return f"{self.type} payment for borrowing {self.borrowing} - {self.status}"

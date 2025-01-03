@@ -82,3 +82,4 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             book.save()
 
         return Response("Borrowing returned successfully.")
+
