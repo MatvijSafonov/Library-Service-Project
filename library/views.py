@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 
 from library.models import Book, Author
-from library.permissions import IsAdminOrReadOnly
+from library.permissions import IsAdminOrReadOnly # noqa
 from library.serializers import (
     BookSerializer,
     BookDetailSerializer,
