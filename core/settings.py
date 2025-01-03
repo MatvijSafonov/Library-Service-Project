@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 
 INTERNAL_IPS = [
     "127.0.0.1",
-    "localhost"
+    "localhost",
 ]
 
 # Application definition
@@ -155,3 +155,7 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = "user.User"
+
+# Stripe settings
+STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
