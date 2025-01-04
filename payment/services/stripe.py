@@ -81,7 +81,7 @@ class StripeService:
         """Check Stripe session status."""
         try:
             session = stripe.checkout.Session.retrieve(session_id)
-            if session.status == "expired":
+            if session.status in ["expired", "complete"]:
                 return "expired"
             if session.payment_status == "paid":
                 return "paid"
