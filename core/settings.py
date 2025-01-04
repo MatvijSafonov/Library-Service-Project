@@ -93,7 +93,7 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-if os.environ.get("IN_DOCKER", False):
+if os.getenv("IN_DOCKER", False):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
