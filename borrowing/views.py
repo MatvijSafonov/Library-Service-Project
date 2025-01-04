@@ -1,12 +1,14 @@
-import datetime
 from typing import Type
 
 import stripe
-from rest_framework import status, viewsets
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework import viewsets, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.serializers import Serializer
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -57,7 +59,6 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if Borrowing.objects.filter(user=user, actual_return_date=None).exists():
             raise ValidationError("You already have an active borrowing.")
-
         book = serializer.validated_data.get("book")
 
         if not book:
@@ -94,7 +95,7 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
         return response
 
-    @action(detail=True, methods=["GET", "POST"])
+    @action(detail=True, methods=["POST"])
     def return_borrowing(self, request, pk=None):
         borrowing = self.get_object()
 
@@ -107,6 +108,35 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         book = borrowing.book
         book.inventory += 1
         book.save(update_fields=["inventory"])
+
+        if borrowing.actual_return_date > borrowing.expected_return_date:
+            try:
+                fine_payment = self.payment_service.create_fine_for_borrowing(
+                    borrowing=borrowing,
+                    request=self.request,
+                )
+                return Response(
+                    {
+                        "message": (
+                            "Borrowing returned successfully, but it's overdue. "
+                            "Please pay the fine."
+                        ),
+                        "fine_payment_url": fine_payment.session_url,
+                        "fine_amount": fine_payment.money_to_pay,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            except stripe.error.StripeError as error:
+                return Response(
+                    {
+                        "message": (
+                            "Borrowing returned successfully, "
+                            "but failed to create fine payment."
+                        ),
+                        "error": str(error),
+                    },
+                    status=status.HTTP_200_OK,
+                )
 
         return Response(
             {"message": "Borrowing returned successfully."},
