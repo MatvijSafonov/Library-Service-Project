@@ -1,12 +1,15 @@
-from datetime import datetime
+import datetime
 from typing import Type
 
 import stripe
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.serializers import Serializer
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -93,7 +96,7 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
         return response
 
-    @action(detail=True, methods=["POST"])
+    @action(detail=True, methods=["POST", "GET"])
     def return_borrowing(self, request, pk=None):
         borrowing = self.get_object()
 

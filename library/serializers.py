@@ -15,7 +15,10 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 class BookSerializer(serializers.ModelSerializer):
-    author = serializers.ChoiceField(choices=Author.objects.all())
+    author = serializers.PrimaryKeyRelatedField(
+        queryset=Author.objects.all(),
+    )
+
     class Meta:
         model = Book
         fields = (
@@ -29,6 +32,8 @@ class BookSerializer(serializers.ModelSerializer):
 
 
 class BookListSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer()
+
     class Meta:
         model = Book
         fields = (
@@ -38,6 +43,8 @@ class BookListSerializer(serializers.ModelSerializer):
 
 
 class BookDetailSerializer(BookSerializer):
+    author = AuthorSerializer()
+
     class Meta:
         model = Book
         fields = (
