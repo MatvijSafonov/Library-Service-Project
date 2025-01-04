@@ -77,6 +77,18 @@ class StripeService:
 
         return session.url, session.id
 
+    def check_session_status(self, session_id: str) -> str:
+        """Check Stripe session status."""
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+            if session.status == "expired":
+                return "expired"
+            if session.payment_status == "paid":
+                return "paid"
+            return "pending"
+        except stripe.error.InvalidRequestError:
+            return "expired"
+
     def verify_session(self, session_id: str) -> bool:
         """Verify if Stripe payment session was successful."""
         try:
