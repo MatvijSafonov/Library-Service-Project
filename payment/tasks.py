@@ -1,9 +1,12 @@
 import os
+
 import requests
 from celery import shared_task
 from django.utils.timezone import now
 from requests.exceptions import RequestException
 
+from payment.models import Payment
+from payment.services.stripe import StripeService
 from borrowing.models import Borrowing
 
 TELEGRAM_API_URL = (f"https://api.telegram.org/bot"
@@ -41,3 +44,21 @@ def check_overdue_borrowings():
             send_telegram_message(message)
     else:
         send_telegram_message("No borrowings overdue today!")
+
+
+def check_payment_sessions():
+    """Check all pending payments for expired sessions."""
+    stripe_service = StripeService()
+    pending_payments = Payment.objects.filter(status=Payment.StatusChoices.PENDING)
+
+    for payment in pending_payments:
+        status = stripe_service.check_session_status(payment.session_id)
+
+        if status == "expired":
+            payment.status = Payment.StatusChoices.EXPIRED
+            payment.save(update_fields=["status"])
+
+        elif status == "paid":
+            payment.status = Payment.StatusChoices.PAID
+            payment.save(update_fields=["status"])
+
