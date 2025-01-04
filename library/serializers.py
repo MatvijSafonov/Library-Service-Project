@@ -45,10 +45,3 @@ class BookDetailSerializer(BookSerializer):
             "inventory",
             "daily_fee",
         )
-
-class BookBorrowingSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Book
-        fields = ("title", "author",)

@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from payment.models import Payment
 from payment.serializers import PaymentSerializer
-from payment.services import StripeService
+from payment.services.stripe import StripeService
 
 
 class PaymentViewSet(
@@ -118,7 +118,6 @@ class PaymentViewSet(
             {"error": "Payment verification failed"},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
 
     @action(
         methods=["GET"],

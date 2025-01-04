@@ -1,10 +1,12 @@
 from typing import Type
 
+import stripe
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.request import Request
 from rest_framework.serializers import Serializer
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -14,8 +16,9 @@ from rest_framework.decorators import action
 from borrowing.models import Borrowing
 from borrowing.serializers import (
     BorrowingSerializer,
-    BorrowingDetailSerializer
+    BorrowingDetailSerializer,
 )
+from payment.services.payment import PaymentService
 
 
 class BorrowingPagination(PageNumberPagination):
@@ -25,18 +28,15 @@ class BorrowingPagination(PageNumberPagination):
 
 class BorrowingViewSet(viewsets.ModelViewSet):
     queryset = Borrowing.objects.all()
-    serializer_class = BorrowingSerializer
-    permission_classes = (IsAuthenticated, )
+    permission_classes = [IsAuthenticated]
     pagination_class = BorrowingPagination
+    payment_service = PaymentService()
 
     def get_serializer_class(self) -> Type[Serializer]:
-        if self.action == "list":
-            return BorrowingSerializer
-
         if self.action == "retrieve":
             return BorrowingDetailSerializer
 
-        return self.serializer_class
+        return BorrowingSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -59,45 +59,86 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if Borrowing.objects.filter(user=user, actual_return_date=None).exists():
             raise ValidationError("You already have an active borrowing.")
+        book = serializer.validated_data.get("book")
 
-            book = serializer.validated_data.get("book")
-            if book.inventory == 0:
-                raise ValidationError("Book inventory is 0.")
+        if not book:
+            raise ValidationError("Book is required")
 
-            book.inventory -= 1
-            book.save()
-            serializer.save(user=user)
+        if book.inventory == 0:
+            raise ValidationError(
+                f'Book "{book.title}" is not available (inventory is 0)'
+            )
 
-    @action(
-        detail=True,
-        methods=["POST"],
-        url_path="return"
-    )
+        book.inventory -= 1
+        book.save(update_fields=["inventory"])
+
+        borrowing = serializer.save(user=user)
+
+        try:
+            payment = self.payment_service.create_payment_for_borrowing(
+                borrowing=borrowing,
+                request=self.request,
+            )
+            self.payment_session_url = payment.session_url
+        except stripe.error.StripeError as error:
+            book.inventory += 1
+            book.save(update_fields=["inventory"])
+            borrowing.delete()
+            raise ValidationError(f"Failed to create payment: {str(error)}")
+
+    def create(self, request: Request, *args, **kwargs) -> Response:
+        """Create borrowing with payment session URL in response."""
+        response = super().create(request, *args, **kwargs)
+
+        if response.status_code == status.HTTP_201_CREATED:
+            response.data["payment_url"] = self.payment_session_url
+
+        return response
+
+    @action(detail=True, methods=["POST"])
     def return_borrowing(self, request, pk=None):
-        """
-        Return a borrowed book and update inventory
-        """
-        borrowing = get_object_or_404(Borrowing, pk=pk)
+        borrowing = self.get_object()
 
         if borrowing.actual_return_date:
-            return Response(
-                {"detail": "This book has already been returned."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            raise ValidationError("This borrowing has already been returned.")
 
-        if not request.user.is_staff and borrowing.user != request.user:
-            raise PermissionDenied(
-                "You don't have permission to return this book."
-            )
+        borrowing.actual_return_date = datetime.date.today()
+        borrowing.save()
 
-        with transaction.atomic():
-            borrowing.actual_return_date = timezone.now().date()
-            borrowing.book.inventory += 1
-            borrowing.book.save()
-            borrowing.save()
+        book = borrowing.book
+        book.inventory += 1
+        book.save(update_fields=["inventory"])
+
+        if borrowing.actual_return_date > borrowing.expected_return_date:
+            try:
+                fine_payment = self.payment_service.create_fine_for_borrowing(
+                    borrowing=borrowing,
+                    request=self.request,
+                )
+                return Response(
+                    {
+                        "message": (
+                            "Borrowing returned successfully, but it's overdue. "
+                            "Please pay the fine."
+                        ),
+                        "fine_payment_url": fine_payment.session_url,
+                        "fine_amount": fine_payment.money_to_pay,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            except stripe.error.StripeError as error:
+                return Response(
+                    {
+                        "message": (
+                            "Borrowing returned successfully, "
+                            "but failed to create fine payment."
+                        ),
+                        "error": str(error),
+                    },
+                    status=status.HTTP_200_OK,
+                )
 
         return Response(
-            {"detail": "Borrowing returned successfully."},
-            status=status.HTTP_200_OK
+            {"message": "Borrowing returned successfully."},
+            status=status.HTTP_200_OK,
         )
-
