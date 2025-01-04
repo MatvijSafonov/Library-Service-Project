@@ -14,7 +14,7 @@ class StripeService:
     """Service for handling Stripe payments integration."""
 
     CURRENCY = "usd"
-    PAYMENT_EXPIRATION_HOURS = 24
+    SESSION_LIFETIME_MINUTES = 30
 
     def __init__(self):
         """Initialize Stripe service with API key from settings."""
@@ -51,7 +51,7 @@ class StripeService:
         cancel_url = f"{base_cancel_url}?payment_id={payment.id}"
 
         amount_cents = int(amount * 100)
-        expires_at = int(time.time() + 30 * 60)
+        expires_at = int(time.time() + self.SESSION_LIFETIME_MINUTES * 60)
 
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
