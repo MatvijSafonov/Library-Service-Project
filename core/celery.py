@@ -11,6 +11,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     "check-overdue-borrowings-every-day": {
         "task": "borrowing.services.tasks.check_overdue_borrowings",
-        "schedule": crontab(crontab(hour=7, minute=0),
+        "schedule": crontab(hour=7, minute=0),
     },
 }
