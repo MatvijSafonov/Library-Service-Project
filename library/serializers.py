@@ -15,6 +15,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 class BookSerializer(serializers.ModelSerializer):
+    author = serializers.ChoiceField(choices=Author.objects.all())
     class Meta:
         model = Book
         fields = (
