@@ -4,6 +4,7 @@ from rest_framework.request import Request
 
 from borrowing.models import Borrowing
 from payment.models import Payment
+from payment.services.calculation import PaymentCalculationService
 from payment.services.stripe import StripeService
 
 
@@ -12,6 +13,7 @@ class PaymentService:
 
     def __init__(self):
         self.stripe_service = StripeService()
+        self.calculation_service = PaymentCalculationService()
 
     @transaction.atomic
     def create_payment_for_borrowing(
@@ -24,6 +26,23 @@ class PaymentService:
             session_url, session_id = self.stripe_service.create_payment_session(
                 borrowing=borrowing,
                 request=request,
+            )
+            return Payment.objects.get(session_id=session_id)
+        except stripe.error.StripeError:
+            raise
+
+    @transaction.atomic
+    def create_fine_for_borrowing(
+        self,
+        borrowing: Borrowing,
+        request: Request,
+    ) -> Payment:
+        """Create a fine payment for overdue borrowing."""
+        try:
+            session_url, session_id = self.stripe_service.create_payment_session(
+                borrowing=borrowing,
+                request=request,
+                is_fine=True,
             )
             return Payment.objects.get(session_id=session_id)
         except stripe.error.StripeError:

@@ -108,6 +108,35 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         book.inventory += 1
         book.save(update_fields=["inventory"])
 
+        if borrowing.actual_return_date > borrowing.expected_return_date:
+            try:
+                fine_payment = self.payment_service.create_fine_for_borrowing(
+                    borrowing=borrowing,
+                    request=self.request,
+                )
+                return Response(
+                    {
+                        "message": (
+                            "Borrowing returned successfully, but it's overdue. "
+                            "Please pay the fine."
+                        ),
+                        "fine_payment_url": fine_payment.session_url,
+                        "fine_amount": fine_payment.money_to_pay,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            except stripe.error.StripeError as error:
+                return Response(
+                    {
+                        "message": (
+                            "Borrowing returned successfully, "
+                            "but failed to create fine payment."
+                        ),
+                        "error": str(error),
+                    },
+                    status=status.HTTP_200_OK,
+                )
+
         return Response(
             {"message": "Borrowing returned successfully."},
             status=status.HTTP_200_OK,

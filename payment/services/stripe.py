@@ -1,5 +1,4 @@
 import time
-from decimal import Decimal
 
 import stripe
 from django.conf import settings
@@ -8,6 +7,7 @@ from rest_framework.request import Request
 
 from borrowing.models import Borrowing
 from payment.models import Payment
+from payment.services.calculation import PaymentCalculationService
 
 
 class StripeService:
@@ -19,20 +19,26 @@ class StripeService:
     def __init__(self):
         """Initialize Stripe service with API key from settings."""
         stripe.api_key = settings.STRIPE_SECRET_KEY
+        self.calculation_service = PaymentCalculationService()
 
     def create_payment_session(
         self,
         borrowing: Borrowing,
         request: Request,
+        is_fine: bool = False,
     ) -> tuple[str, str]:
         """Create new Stripe payment session for payment processing."""
-        days = (borrowing.expected_return_date - borrowing.borrow_date).days
-        amount = Decimal(str(borrowing.book.daily_fee * days))
+        if is_fine:
+            amount = self.calculation_service.calculate_fine_amount(borrowing)
+            payment_name = f"Fine for overdue book: {borrowing.book.title}"
+        else:
+            amount = self.calculation_service.calculate_payment_amount(borrowing)
+            payment_name = f"Borrowing book: {borrowing.book.title}"
 
         payment = Payment.objects.create(
             borrowing=borrowing,
             money_to_pay=amount,
-            type=Payment.TypeChoices.PAYMENT,
+            type=Payment.TypeChoices.FINE if is_fine else Payment.TypeChoices.PAYMENT,
             status=Payment.StatusChoices.PENDING,
         )
 
@@ -53,9 +59,7 @@ class StripeService:
                 {
                     "price_data": {
                         "currency": self.CURRENCY,
-                        "product_data": {
-                            "name": f"Borrowing book: {borrowing.book.title}"
-                        },
+                        "product_data": {"name": payment_name},
                         "unit_amount": amount_cents,
                     },
                     "quantity": 1,
