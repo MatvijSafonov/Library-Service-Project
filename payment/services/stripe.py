@@ -6,6 +6,9 @@ from django.conf import settings
 from django.urls import reverse
 from rest_framework.request import Request
 
+from borrowing.models import Borrowing
+from payment.models import Payment
+
 
 class StripeService:
     """Service for handling Stripe payments integration."""
@@ -19,19 +22,27 @@ class StripeService:
 
     def create_payment_session(
         self,
-        amount: Decimal,
-        payment_id: int,
-        borrowing_id: int,
+        borrowing: Borrowing,
         request: Request,
     ) -> tuple[str, str]:
         """Create new Stripe payment session for payment processing."""
+        days = (borrowing.expected_return_date - borrowing.borrow_date).days
+        amount = Decimal(str(borrowing.book.daily_fee * days))
+
+        payment = Payment.objects.create(
+            borrowing=borrowing,
+            money_to_pay=amount,
+            type=Payment.TypeChoices.PAYMENT,
+            status=Payment.StatusChoices.PENDING,
+        )
+
         base_success_url = request.build_absolute_uri(
             reverse("payment:payment-success")
         )
-        success_url = f"{base_success_url}?payment_id={payment_id}"
+        success_url = f"{base_success_url}?payment_id={payment.id}"
 
         base_cancel_url = request.build_absolute_uri(reverse("payment:payment-cancel"))
-        cancel_url = f"{base_cancel_url}?payment_id={payment_id}"
+        cancel_url = f"{base_cancel_url}?payment_id={payment.id}"
 
         amount_cents = int(amount * 100)
         expires_at = int(time.time() + 30 * 60)
@@ -43,7 +54,7 @@ class StripeService:
                     "price_data": {
                         "currency": self.CURRENCY,
                         "product_data": {
-                            "name": f"Payment for borrowing #{borrowing_id}"
+                            "name": f"Borrowing book: {borrowing.book.title}"
                         },
                         "unit_amount": amount_cents,
                     },
@@ -55,6 +66,11 @@ class StripeService:
             cancel_url=cancel_url + "&session_id={CHECKOUT_SESSION_ID}",
             expires_at=expires_at,
         )
+
+        payment.session_url = session.url
+        payment.session_id = session.id
+        payment.save(update_fields=["session_url", "session_id"])
+
         return session.url, session.id
 
     def verify_session(self, session_id: str) -> bool:

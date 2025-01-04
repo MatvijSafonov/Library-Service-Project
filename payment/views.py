@@ -179,9 +179,7 @@ class PaymentViewSet(
 
         try:
             session_url, session_id = self.stripe_service.create_payment_session(
-                amount=payment.money_to_pay,
-                payment_id=payment.id,
-                borrowing_id=payment.borrowing.id,
+                borrowing=payment.borrowing,
                 request=request,
             )
             payment.session_url = session_url

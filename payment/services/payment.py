@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 import stripe
 from django.db import transaction
 from rest_framework.request import Request
@@ -22,30 +20,11 @@ class PaymentService:
         request: Request,
     ) -> Payment:
         """Create a new payment for borrowing and initialize Stripe session."""
-        daily_fee = borrowing.book.daily_fee
-        days = (borrowing.expected_return_date - borrowing.borrow_date).days
-        total_amount = Decimal(str(daily_fee * days))
-
-        payment = Payment.objects.create(
-            borrowing=borrowing,
-            type=Payment.TypeChoices.PAYMENT,
-            money_to_pay=total_amount,
-            status=Payment.StatusChoices.PENDING,
-        )
-
-        session_url, session_id = self.stripe_service.create_payment_session(
-            amount=total_amount,
-            payment_id=payment.id,
-            borrowing_id=borrowing.id,
-            request=request,
-        )
-
         try:
-            payment.session_url = session_url
-            payment.session_id = session_id
-            payment.save(update_fields=["session_url", "session_id"])
-
-            return payment
+            session_url, session_id = self.stripe_service.create_payment_session(
+                borrowing=borrowing,
+                request=request,
+            )
+            return Payment.objects.get(session_id=session_id)
         except stripe.error.StripeError:
-            payment.delete()
             raise
