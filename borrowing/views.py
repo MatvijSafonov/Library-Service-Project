@@ -1,3 +1,4 @@
+import datetime
 from typing import Type
 
 import stripe
@@ -95,7 +96,7 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
         return response
 
-    @action(detail=True, methods=["POST"])
+    @action(detail=True, methods=["POST", "GET"])
     def return_borrowing(self, request, pk=None):
         borrowing = self.get_object()
 

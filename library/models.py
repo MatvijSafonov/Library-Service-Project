@@ -18,7 +18,7 @@ class Author(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     def __str__(self):
-        return self.full_name()
+        return f"{self.first_name} {self.last_name}"
 
 
 class Book(models.Model):
@@ -28,7 +28,7 @@ class Book(models.Model):
     )
 
     title = models.CharField(max_length=63)
-    author = models.CharField(max_length=63)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="books")
     cover = models.CharField(choices=COVER_CHOICES, max_length=7)
     inventory = models.PositiveIntegerField()
     daily_fee = models.DecimalField(max_digits=5, decimal_places=2)
@@ -38,22 +38,3 @@ class Book(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.author} ({self.daily_fee})"
-
-
-class BookAuthor(models.Model):
-    """
-    Middle table for Book and Author many-to-many relationship
-    """
-
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["book", "author"], name="unique_book_author"
-            )
-        ]
-
-    def __str__(self):
-        return f"{self.book} - {self.author}"

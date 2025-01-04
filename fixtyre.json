@@ -1,0 +1,63 @@
+[
+    {
+        "model": "sessions.session",
+        "pk": "qq6ftrjd3ro3zyb150erk70j8hs87aul",
+        "fields": {
+            "session_data": ".eJxVjDsOwjAQBe_iGller-MPJX3OYK1_OIAcKU4qxN1JpBTQvpl5b-ZpW6vfel78lNiVAbv8boHiM7cDpAe1-8zj3NZlCvxQ-Ek7H-eUX7fT_Tuo1OteKwWDjnoQJhWh0TmwQFoqkTALKAFRRVFkzAkQd4EsmWwlhACmCHTs8wWv-jbH:1tU3Wd:HGJVl2e6YvVjbet6sd5HlDy4tXEB_rwMbG7bA73KBoQ",
+            "expire_date": "2025-01-18T12:45:07.914Z"
+        }
+    },
+    {
+        "model": "library.author",
+        "pk": 2,
+        "fields": {
+            "first_name": "Agatha",
+            "last_name": "Christie",
+            "pseudonym": ""
+        }
+    },
+    {
+        "model": "library.author",
+        "pk": 3,
+        "fields": {
+            "first_name": "Barbara",
+            "last_name": "Cartland",
+            "pseudonym": ""
+        }
+    },
+    {
+        "model": "library.author",
+        "pk": 4,
+        "fields": {
+            "first_name": "Danielle",
+            "last_name": "Steel",
+            "pseudonym": ""
+        }
+    },
+    {
+        "model": "library.author",
+        "pk": 5,
+        "fields": {
+            "first_name": "Harold",
+            "last_name": "Robbins",
+            "pseudonym": ""
+        }
+    },
+    {
+        "model": "user.user",
+        "pk": 1,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$HzqhJjcQmgmlxURZeGBrua$lSNgfGWXJiD2mamhtaKAq4ZsMcjVQVsNgbbwnr1gze8=",
+            "last_login": "2025-01-04T12:45:07.775Z",
+            "is_superuser": true,
+            "first_name": "",
+            "last_name": "",
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2025-01-04T12:44:25.536Z",
+            "email": "admin@admin.com",
+            "groups": [],
+            "user_permissions": []
+        }
+    }
+]
