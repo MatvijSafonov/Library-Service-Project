@@ -12,7 +12,7 @@ from library.serializers import (
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -25,3 +25,4 @@ class BookViewSet(viewsets.ModelViewSet):
 class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
+    permission_classes = [IsAdminOrReadOnly]
