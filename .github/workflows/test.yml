@@ -3,12 +3,18 @@ name: Test
 on:
   pull_request:
     branches:
-      - "master"
+      - "main"
+      - "develop"
 
 jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
+    env:
+      SECRET_KEY: django-insecure-test-key-for-github-actions
+      STRIPE_PUBLIC_KEY: test_public_key
+      STRIPE_SECRET_KEY: test_secret_key
 
     steps:
       - name: Checkout repo
@@ -23,6 +29,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Run Black formatter
+        run: black .
+
+      - name: Run Flake8 linter
+        run: flake8 .
+
       - name: Run tests
         timeout-minutes: 5
         run: python manage.py test

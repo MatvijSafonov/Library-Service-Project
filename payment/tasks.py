@@ -1,5 +1,6 @@
 from celery import shared_task
 
+from borrowing.models import Borrowing
 from payment.models import Payment
 from payment.services.stripe import StripeService
 

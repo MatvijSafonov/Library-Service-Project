@@ -23,9 +23,10 @@ ENV IN_DOCKER=1
 
 WORKDIR /app
 
-# Install netcat for checking database connection in entrypoint script.
+# Install system dependencies.
 RUN apt-get update && apt-get install -y \
     netcat-traditional \
+    bash \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy dependency file.
@@ -44,7 +45,7 @@ RUN adduser \
     --disabled-password \
     --gecos "" \
     --home "/app" \
-    --shell "/sbin/nologin" \
+    --shell "/bin/bash" \
     --no-create-home \
     --uid "${UID}" \
     django-user
@@ -60,5 +61,5 @@ USER django-user
 EXPOSE 8000
 
 # Run the application.
-ENTRYPOINT ["sh", "/app/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh"]
 CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
