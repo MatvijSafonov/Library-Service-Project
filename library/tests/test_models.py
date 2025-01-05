@@ -8,7 +8,7 @@ class AuthorModelTests(TestCase):
         self.author_data = {
             "first_name": "Test",
             "last_name": "Author",
-            "pseudonym": "TA"
+            "pseudonym": "TA",
         }
 
     def test_create_author(self):
@@ -20,12 +20,16 @@ class AuthorModelTests(TestCase):
 
     def test_author_str_method(self):
         author = Author.objects.create(**self.author_data)
-        expected_str = f"{self.author_data['first_name']} {self.author_data['last_name']}"
+        expected_str = (
+            f"{self.author_data['first_name']} {self.author_data['last_name']}"
+        )
         self.assertEqual(str(author), expected_str)
 
     def test_author_full_name_method(self):
         author = Author.objects.create(**self.author_data)
-        expected_full_name = f"{self.author_data['first_name']} {self.author_data['last_name']}"
+        expected_full_name = (
+            f"{self.author_data['first_name']} {self.author_data['last_name']}"
+        )
         self.assertEqual(author.full_name(), expected_full_name)
 
     def test_unique_author_constraint(self):
@@ -36,16 +40,13 @@ class AuthorModelTests(TestCase):
 
 class BookModelTests(TestCase):
     def setUp(self):
-        self.author = Author.objects.create(
-            first_name="Test",
-            last_name="Author"
-        )
+        self.author = Author.objects.create(first_name="Test", last_name="Author")
         self.book_data = {
             "title": "Test Book",
             "author": self.author,
             "cover": "soft",
             "inventory": 5,
-            "daily_fee": "10.50"
+            "daily_fee": "10.50",
         }
 
     def test_create_book(self):

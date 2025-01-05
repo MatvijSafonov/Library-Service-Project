@@ -9,7 +9,7 @@ class UserModelTests(TestCase):
             "email": "test@test.com",
             "password": "testpass123",
             "first_name": "Test",
-            "last_name": "User"
+            "last_name": "User",
         }
 
     def test_create_user(self):

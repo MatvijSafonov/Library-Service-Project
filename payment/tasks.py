@@ -5,20 +5,20 @@ from celery import shared_task
 from django.utils.timezone import now
 from requests.exceptions import RequestException
 
+from borrowing.models import Borrowing
 from payment.models import Payment
 from payment.services.stripe import StripeService
-from borrowing.models import Borrowing
 
-TELEGRAM_API_URL = (f"https://api.telegram.org/bot"
-                    f"{os.getenv('TELEGRAM_BOT_TOKEN')}/sendMessage")
+TELEGRAM_API_URL = (
+    f"https://api.telegram.org/bot" f"{os.getenv('TELEGRAM_BOT_TOKEN')}/sendMessage"
+)
 CHAT_ID = os.getenv("CHAT_ID")
 
 
 def send_telegram_message(message):
     try:
         response = requests.post(
-            TELEGRAM_API_URL,
-            data={"chat_id": CHAT_ID, "text": message}
+            TELEGRAM_API_URL, data={"chat_id": CHAT_ID, "text": message}
         )
         response.raise_for_status()
     except RequestException as e:
@@ -65,4 +65,3 @@ def check_payment_sessions():
         elif status == "paid":
             payment.status = Payment.StatusChoices.PAID
             payment.save(update_fields=["status"])
-
