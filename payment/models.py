@@ -31,7 +31,7 @@ class Payment(models.Model):
         db_index=True,
         help_text="Current status of the payment.",
     )
-    type = models.CharField(
+    type = models.CharField(  # noqa: VNE003
         max_length=7,
         choices=TypeChoices.choices,
         default=TypeChoices.PAYMENT,
@@ -86,10 +86,9 @@ class Payment(models.Model):
                 {"money_to_pay": "Payment amount must be greater than 0."}
             )
         if self.status == self.StatusChoices.PAID and not self.session_id:
-            raise ValidationError(
-                {"status": "Paid payment must have a session ID."}
-            )
+            raise ValidationError({"status": "Paid payment must have a session ID."})
 
     def save(self, *args, **kwargs) -> None:
         """Save the payment instance with validation."""
+        self.full_clean()
         super().save(*args, **kwargs)
