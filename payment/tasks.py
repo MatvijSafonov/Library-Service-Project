@@ -29,7 +29,7 @@ def send_telegram_message(message):
 def check_overdue_borrowings():
     today = now().date()
     overdue_borrowings = Borrowing.objects.filter(
-        expected_return_date__lte=today, returned=False
+        expected_return_date__lte=today, actual_return_date__isnull=True
     )
 
     if overdue_borrowings.exists():
