@@ -10,24 +10,22 @@ from library.models import Book, Author
 class BorrowingSerializerTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
-            email="test@test.com",
-            password="testpass123"
+            email="test@test.com", password="testpass123"
         )
-        self.author = Author.objects.create(
-            first_name="Test",
-            last_name="Author"
-        )
+        self.author = Author.objects.create(first_name="Test", last_name="Author")
         self.book = Book.objects.create(
             title="Test Book",
             author=self.author,
             cover="soft",
             inventory=5,
-            daily_fee=10.00
+            daily_fee=10.00,
         )
 
         self.borrowing_data = {
             "book": self.book.id,
-            "expected_return_date": (timezone.now().date() + timezone.timedelta(days=14)).isoformat()
+            "expected_return_date": (
+                timezone.now().date() + timezone.timedelta(days=14)
+            ).isoformat(),
         }
 
     def test_serializer_with_valid_data(self):
@@ -41,18 +39,20 @@ class BorrowingSerializerTests(TestCase):
 
         serializer = BorrowingSerializer(data=self.borrowing_data)
         self.assertFalse(serializer.is_valid())
-        self.assertIn('Expected return date should be greater than borrow date',
-                      str(serializer.errors['non_field_errors']))
+        self.assertIn(
+            "Expected return date should be greater than borrow date",
+            str(serializer.errors["non_field_errors"]),
+        )
 
     def test_detail_serializer_includes_book_info(self):
         borrowing = Borrowing.objects.create(
             user=self.user,
             book=self.book,
-            expected_return_date=timezone.now().date() + timezone.timedelta(days=14)
+            expected_return_date=timezone.now().date() + timezone.timedelta(days=14),
         )
         serializer = BorrowingDetailSerializer(borrowing)
         data = serializer.data
 
-        self.assertIn('book', data)
-        self.assertEqual(data['book']['title'], self.book.title)
-        self.assertIn('payments', data)
+        self.assertIn("book", data)
+        self.assertEqual(data["book"]["title"], self.book.title)
+        self.assertIn("payments", data)

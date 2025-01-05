@@ -7,14 +7,9 @@ class IsAdminOrReadOnly(BasePermission):
     Only admin user can create/update/delete books
     All user (even unauthenticated ones) should be able to list books
     """
-    def has_permission(
-            self,
-            request: Request,
-            view: object) -> bool:
+
+    def has_permission(self, request: Request, view: object) -> bool:
         return bool(
-            (
-                request.method in SAFE_METHODS
-                and request.user
-            )
+            (request.method in SAFE_METHODS and request.user)
             or (request.user and request.user.is_staff)
         )

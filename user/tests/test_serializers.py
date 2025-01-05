@@ -9,7 +9,7 @@ class UserSerializerTests(TestCase):
             "email": "test@test.com",
             "password": "testpass123",
             "first_name": "Test",
-            "last_name": "User"
+            "last_name": "User",
         }
 
     def test_serializer_with_valid_data(self):
@@ -21,7 +21,7 @@ class UserSerializerTests(TestCase):
         """Test that password field is write-only"""
         user = get_user_model().objects.create_user(**self.user_data)
         serializer = UserSerializer(user)
-        self.assertNotIn('password', serializer.data)
+        self.assertNotIn("password", serializer.data)
 
     def test_create_user_with_serializer(self):
         """Test creating user with serializer"""
@@ -36,10 +36,7 @@ class UserSerializerTests(TestCase):
         """Test updating user with serializer"""
         user = get_user_model().objects.create_user(**self.user_data)
 
-        update_data = {
-            "first_name": "Updated",
-            "password": "newpass123"
-        }
+        update_data = {"first_name": "Updated", "password": "newpass123"}
 
         serializer = UserSerializer(user, data=update_data, partial=True)
         self.assertTrue(serializer.is_valid())

@@ -4,7 +4,7 @@ from library.serializers import (
     AuthorSerializer,
     BookSerializer,
     BookListSerializer,
-    BookDetailSerializer
+    BookDetailSerializer,
 )
 
 
@@ -13,7 +13,7 @@ class AuthorSerializerTests(TestCase):
         self.author_data = {
             "first_name": "Test",
             "last_name": "Author",
-            "pseudonym": "TA"
+            "pseudonym": "TA",
         }
 
     def test_serializer_with_valid_data(self):
@@ -32,16 +32,13 @@ class AuthorSerializerTests(TestCase):
 
 class BookSerializerTests(TestCase):
     def setUp(self):
-        self.author = Author.objects.create(
-            first_name="Test",
-            last_name="Author"
-        )
+        self.author = Author.objects.create(first_name="Test", last_name="Author")
         self.book_data = {
             "title": "Test Book",
             "author": self.author.id,
             "cover": "soft",
             "inventory": 5,
-            "daily_fee": "10.50"
+            "daily_fee": "10.50",
         }
 
     def test_book_serializer_with_valid_data(self):
@@ -57,7 +54,7 @@ class BookSerializerTests(TestCase):
             author=self.author,
             cover="soft",
             inventory=5,
-            daily_fee="10.50"
+            daily_fee="10.50",
         )
         serializer = BookListSerializer(book)
         data = serializer.data
@@ -72,7 +69,7 @@ class BookSerializerTests(TestCase):
             author=self.author,
             cover="soft",
             inventory=5,
-            daily_fee="10.50"
+            daily_fee="10.50",
         )
         serializer = BookDetailSerializer(book)
         data = serializer.data
