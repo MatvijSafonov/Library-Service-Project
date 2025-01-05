@@ -13,6 +13,8 @@ jobs:
 
     env:
       SECRET_KEY: django-insecure-test-key-for-github-actions
+      STRIPE_PUBLIC_KEY: test_public_key
+      STRIPE_SECRET_KEY: test_secret_key
 
     steps:
       - name: Checkout repo
