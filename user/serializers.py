@@ -16,9 +16,18 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "email", "password", "first_name", "last_name", "is_staff")
+        fields = (
+            "id",
+            "email",
+            "password",
+            "chat_id",
+            "first_name",
+            "last_name",
+            "is_staff"
+        )
         read_only_fields = ("id", "is_staff")
         extra_kwargs = {
+            "chat_id": {"required": False},
             "first_name": {"required": False},
             "last_name": {"required": False},
         }
