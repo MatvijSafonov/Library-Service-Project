@@ -88,36 +88,68 @@ class PaymentViewSet(
         """
         Handle successful payment.
 
+        This endpoint is called by Stripe after successful payment.
+        Requires payment_id and session_id in query parameters.
         Verifies the payment session and updates payment status if successful.
-        Returns payment details and confirmation message.
         """
         session_id = request.query_params.get("session_id")
         payment_id = request.query_params.get("payment_id")
 
-        error_response, payment = self._validate_payment_session(session_id, payment_id)
-
-        if error_response:
-            return error_response
-
-        if self.stripe_service.verify_session(session_id):
-            payment.status = Payment.StatusChoices.PAID
-            payment.session_id = session_id
-            payment.save(update_fields=["status", "session_id"])
-
+        if not payment_id or not session_id:
             return Response(
                 {
-                    "message": "Payment successful",
-                    "payment_id": payment.id,
-                    "amount": payment.money_to_pay,
-                    "borrowing_id": payment.borrowing.id,
+                    "error": (
+                        "Missing required parameters. "
+                        "This endpoint should only be accessed via Stripe redirect."
+                    )
                 },
-                status=status.HTTP_200_OK,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        return Response(
-            {"error": "Payment verification failed"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        try:
+            payment = get_object_or_404(Payment, id=payment_id)
+
+            if payment.session_id != session_id:
+                return Response(
+                    {"error": "Invalid session ID"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if payment.status == Payment.StatusChoices.PAID:
+                return Response(
+                    {
+                        "message": "Payment already processed",
+                        "payment_id": payment.id,
+                        "amount": payment.money_to_pay,
+                        "borrowing_id": payment.borrowing.id,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+
+            if self.stripe_service.verify_session(session_id):
+                payment.status = Payment.StatusChoices.PAID
+                payment.save(update_fields=["status"])
+
+                return Response(
+                    {
+                        "message": "Payment successful",
+                        "payment_id": payment.id,
+                        "amount": payment.money_to_pay,
+                        "borrowing_id": payment.borrowing.id,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+
+            return Response(
+                {"error": "Payment verification failed"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        except Payment.DoesNotExist:
+            return Response(
+                {"error": "Payment not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
     @action(
         methods=["GET"],
@@ -129,33 +161,50 @@ class PaymentViewSet(
         """
         Handle canceled payment.
 
-        Returns payment details and information about session expiration.
+        This endpoint is called by Stripe after payment cancellation.
+        Requires payment_id and session_id in query parameters.
         """
         payment_id = request.query_params.get("payment_id")
+        session_id = request.query_params.get("session_id")
 
-        if payment_id:
-            try:
-                payment = get_object_or_404(Payment, id=payment_id)
+        if not payment_id or not session_id:
+            return Response(
+                {
+                    "error": (
+                        "Missing required parameters. "
+                        "This endpoint should only be accessed via Stripe redirect."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            payment = get_object_or_404(Payment, id=payment_id)
+            if payment.session_id != session_id:
                 return Response(
-                    {
-                        "message": (
-                            "Payment cancelled. You can try again by creating "
-                            "a new payment. Note: this payment session will expire in "
-                            f"{StripeService.PAYMENT_EXPIRATION_HOURS} hours."
-                        ),
-                        "payment_id": payment.id,
-                        "amount": payment.money_to_pay,
-                        "borrowing_id": payment.borrowing.id,
-                    },
-                    status=status.HTTP_200_OK,
+                    {"error": "Invalid session ID"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
-            except Payment.DoesNotExist:
-                pass
 
-        return Response(
-            {"message": "Payment cancelled"},
-            status=status.HTTP_200_OK,
-        )
+            return Response(
+                {
+                    "message": (
+                        "Payment cancelled. You can try again by using the same "
+                        f"payment URL within {StripeService.SESSION_LIFETIME_MINUTES} "
+                        "minutes."
+                    ),
+                    "payment_id": payment_id,
+                    "amount": payment.money_to_pay,
+                    "borrowing_id": payment.borrowing.id,
+                    "session_url": payment.session_url,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Payment.DoesNotExist:
+            return Response(
+                {"error": "Payment not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
     @action(
         methods=["POST"],
@@ -166,7 +215,7 @@ class PaymentViewSet(
         """
         Renew payment session.
 
-        Creates a new Stripe payment session for an existing payment.
+        Updates the existing payment with a new Stripe session
         Returns new session URL and payment details.
         """
         payment = self.get_object()
@@ -184,10 +233,12 @@ class PaymentViewSet(
             )
             payment.session_url = session_url
             payment.session_id = session_id
-            payment.save(update_fields=["session_url", "session_id"])
+            payment.status = Payment.StatusChoices.PENDING
+            payment.save(update_fields=["session_url", "session_id", "status"])
 
             return Response(
                 {
+                    "message": "Payment session renewed successfully",
                     "session_url": session_url,
                     "payment_id": payment.id,
                     "borrowing_id": payment.borrowing.id,
