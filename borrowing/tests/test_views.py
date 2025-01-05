@@ -31,23 +31,20 @@ class PrivateBorrowingApiTests(TestCase):
         self.user = create_user()
         self.client.force_authenticate(self.user)
 
-        self.author = Author.objects.create(
-            first_name="Test",
-            last_name="Author"
-        )
+        self.author = Author.objects.create(first_name="Test", last_name="Author")
         self.book = Book.objects.create(
             title="Test Book",
             author=self.author,
             cover="soft",  # Змінено з Book.CoverChoices.SOFT на "soft"
             inventory=5,
-            daily_fee=10.00
+            daily_fee=10.00,
         )
 
     def test_list_borrowings(self):
         Borrowing.objects.create(
             user=self.user,
             book=self.book,
-            expected_return_date=timezone.now().date() + timezone.timedelta(days=14)
+            expected_return_date=timezone.now().date() + timezone.timedelta(days=14),
         )
         res = self.client.get(BORROWING_URL)
 
@@ -59,7 +56,9 @@ class PrivateBorrowingApiTests(TestCase):
         mock_payment.return_value.session_url = "http://test.com/payment"
         payload = {
             "book": self.book.id,
-            "expected_return_date": (timezone.now().date() + timezone.timedelta(days=14)).isoformat()
+            "expected_return_date": (
+                timezone.now().date() + timezone.timedelta(days=14)
+            ).isoformat(),
         }
 
         res = self.client.post(BORROWING_URL, payload)

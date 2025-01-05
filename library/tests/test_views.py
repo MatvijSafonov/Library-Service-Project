@@ -13,7 +13,7 @@ def create_author(**params):
     defaults = {
         "first_name": "Test",
         "last_name": f"Author {Author.objects.count()}",
-        "pseudonym": "TA"
+        "pseudonym": "TA",
     }
     defaults.update(params)
     return Author.objects.create(**defaults)
@@ -28,7 +28,7 @@ def create_book(**params):
         "author": author,
         "cover": "soft",
         "inventory": 5,
-        "daily_fee": "10.50"
+        "daily_fee": "10.50",
     }
     defaults.update(params)
     return Book.objects.create(**defaults)
@@ -50,8 +50,7 @@ class PublicBookApiTests(TestCase):
 class PrivateBookApiTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
-            email="test@test.com",
-            password="testpass123"
+            email="test@test.com", password="testpass123"
         )
         self.client = APIClient()
         self.client.force_authenticate(self.user)
@@ -72,7 +71,7 @@ class PrivateBookApiTests(TestCase):
             "author": author.id,
             "cover": "soft",
             "inventory": 5,
-            "daily_fee": "10.50"
+            "daily_fee": "10.50",
         }
         res = self.client.post(BOOKS_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
@@ -82,9 +81,7 @@ class AdminBookApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.admin = get_user_model().objects.create_user(
-            email="admin@test.com",
-            password="testpass123",
-            is_staff=True
+            email="admin@test.com", password="testpass123", is_staff=True
         )
         self.client.force_authenticate(self.admin)
         self.author = create_author()
@@ -95,7 +92,7 @@ class AdminBookApiTests(TestCase):
             "author": self.author.id,
             "cover": "soft",
             "inventory": 5,
-            "daily_fee": "10.50"
+            "daily_fee": "10.50",
         }
         res = self.client.post(BOOKS_URL, payload)
 

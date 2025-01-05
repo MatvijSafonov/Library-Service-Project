@@ -11,7 +11,7 @@ urlpatterns = [
     path(
         "<int:pk>/return/",
         BorrowingViewSet.as_view({"post": "return_borrowing"}),
-        name="borrowing-return"
+        name="borrowing-return",
     ),
 ]
 
