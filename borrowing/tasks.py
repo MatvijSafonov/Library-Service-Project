@@ -14,7 +14,7 @@ CHAT_ID = os.getenv("CHAT_ID")
 
 
 def send_telegram_message(message):
-     """
+    """
     Sends a message to a predefined Telegram chat.
     """
     try:
