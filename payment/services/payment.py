@@ -23,11 +23,23 @@ class PaymentService:
     ) -> Payment:
         """Create a new payment for borrowing and initialize Stripe session."""
         try:
+            amount = self.calculation_service.calculate_payment_amount(borrowing)
+            payment = Payment.objects.create(
+                borrowing=borrowing,
+                money_to_pay=amount,
+                type=Payment.TypeChoices.PAYMENT,
+            )
+
             session_url, session_id = self.stripe_service.create_payment_session(
                 borrowing=borrowing,
                 request=request,
             )
-            return Payment.objects.get(session_id=session_id)
+
+            payment.session_url = session_url
+            payment.session_id = session_id
+            payment.save(update_fields=["session_url", "session_id"])
+
+            return payment
         except stripe.error.StripeError:
             raise
 
@@ -39,11 +51,23 @@ class PaymentService:
     ) -> Payment:
         """Create a fine payment for overdue borrowing."""
         try:
+            amount = self.calculation_service.calculate_fine_amount(borrowing)
+            payment = Payment.objects.create(
+                borrowing=borrowing,
+                money_to_pay=amount,
+                type=Payment.TypeChoices.FINE,
+            )
+
             session_url, session_id = self.stripe_service.create_payment_session(
                 borrowing=borrowing,
                 request=request,
                 is_fine=True,
             )
-            return Payment.objects.get(session_id=session_id)
+
+            payment.session_url = session_url
+            payment.session_id = session_id
+            payment.save(update_fields=["session_url", "session_id"])
+
+            return payment
         except stripe.error.StripeError:
             raise

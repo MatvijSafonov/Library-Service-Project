@@ -6,7 +6,6 @@ from django.urls import reverse
 from rest_framework.request import Request
 
 from borrowing.models import Borrowing
-from payment.models import Payment
 from payment.services.calculation import PaymentCalculationService
 
 
@@ -35,20 +34,13 @@ class StripeService:
             amount = self.calculation_service.calculate_payment_amount(borrowing)
             payment_name = f"Borrowing book: {borrowing.book.title}"
 
-        payment = Payment.objects.create(
-            borrowing=borrowing,
-            money_to_pay=amount,
-            type=Payment.TypeChoices.FINE if is_fine else Payment.TypeChoices.PAYMENT,
-            status=Payment.StatusChoices.PENDING,
-        )
-
         base_success_url = request.build_absolute_uri(
             reverse("payment:payment-success")
         )
-        success_url = f"{base_success_url}?payment_id={payment.id}"
+        success_url = f"{base_success_url}?payment_id={borrowing.payments.first().id}"
 
         base_cancel_url = request.build_absolute_uri(reverse("payment:payment-cancel"))
-        cancel_url = f"{base_cancel_url}?payment_id={payment.id}"
+        cancel_url = f"{base_cancel_url}?payment_id={borrowing.payments.first().id}"
 
         amount_cents = int(amount * 100)
         expires_at = int(time.time() + self.SESSION_LIFETIME_MINUTES * 60)
@@ -71,17 +63,13 @@ class StripeService:
             expires_at=expires_at,
         )
 
-        payment.session_url = session.url
-        payment.session_id = session.id
-        payment.save(update_fields=["session_url", "session_id"])
-
         return session.url, session.id
 
     def check_session_status(self, session_id: str) -> str:
         """Check Stripe session status."""
         try:
             session = stripe.checkout.Session.retrieve(session_id)
-            if session.status == "expired":
+            if session.status in ["expired", "complete"]:
                 return "expired"
             if session.payment_status == "paid":
                 return "paid"
