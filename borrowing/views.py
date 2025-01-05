@@ -13,7 +13,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db import transaction
-from django.utils import timezone
 
 from borrowing.models import Borrowing
 from borrowing.serializers import (
@@ -21,7 +20,6 @@ from borrowing.serializers import (
     BorrowingDetailSerializer,
 )
 from payment.services.payment import PaymentService
-from payment.services.stripe import StripeService
 from .services import BorrowingService
 
 
