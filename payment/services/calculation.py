@@ -10,6 +10,18 @@ class PaymentCalculationService:
 
     MAX_FINE_DAYS = 180
 
+    # @staticmethod
+    # def calculate_fine_amount(borrowing: Borrowing) -> Decimal:
+    #     """Calculate fine amount for overdue borrowing."""
+    #     overdue_days = min(
+    #         (borrowing.actual_return_date - borrowing.expected_return_date).days,
+    #         PaymentCalculationService.MAX_FINE_DAYS,
+    #     )
+    #     return (
+    #         Decimal(str(borrowing.book.daily_fee))
+    #         * overdue_days
+    #         * settings.FINE_MULTIPLIER
+    #     ).quantize(Decimal("0.01"))
     @staticmethod
     def calculate_fine_amount(borrowing: Borrowing) -> Decimal:
         """Calculate fine amount for overdue borrowing."""
@@ -17,14 +29,19 @@ class PaymentCalculationService:
             (borrowing.actual_return_date - borrowing.expected_return_date).days,
             PaymentCalculationService.MAX_FINE_DAYS,
         )
-        return (
-            Decimal(str(borrowing.book.daily_fee))
-            * overdue_days
-            * settings.FINE_MULTIPLIER
-        ).quantize(Decimal("0.01"))
+        daily_fee = Decimal(str(borrowing.book.daily_fee))
+        fine_multiplier = Decimal(str(settings.FINE_MULTIPLIER))
+        return (daily_fee * overdue_days * fine_multiplier).quantize(Decimal("0.01"))
 
+    # @staticmethod
+    # def calculate_payment_amount(borrowing: Borrowing) -> Decimal:
+    #     """Calculate regular payment amount for borrowing."""
+    #     days = (borrowing.expected_return_date - borrowing.borrow_date).days
+    #     return Decimal(str(borrowing.book.daily_fee * days)).quantize(Decimal("0.01"))
     @staticmethod
     def calculate_payment_amount(borrowing: Borrowing) -> Decimal:
         """Calculate regular payment amount for borrowing."""
         days = (borrowing.expected_return_date - borrowing.borrow_date).days
-        return Decimal(str(borrowing.book.daily_fee * days)).quantize(Decimal("0.01"))
+        daily_fee = Decimal(str(borrowing.book.daily_fee))
+        return (daily_fee * days).quantize(Decimal("0.01"))
+
