@@ -98,8 +98,6 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
         return response
 
-
-
     # @action(detail=True, methods=["POST", "GET"])
     # def return_borrowing(self, request, pk=None):
     #     borrowing = self.get_object()
@@ -152,7 +150,7 @@ class BorrowingViewSet(viewsets.ModelViewSet):
     def return_borrowing(self, request, pk=None):
         with transaction.atomic():
             borrowing = self.get_object()
-            
+
             if borrowing.actual_return_date:
                 raise ValidationError("This borrowing has already been returned.")
 
@@ -170,13 +168,22 @@ class BorrowingViewSet(viewsets.ModelViewSet):
                     borrowing=borrowing,
                     request=self.request,
                 )
-                response_data.update({
-                    "message": "Borrowing returned successfully, but it's overdue. Please pay the fine.",
-                    "fine_payment_url": fine_payment.session_url,
-                    "fine_amount": fine_payment.money_to_pay,
-                })
-                transaction.on_commit(lambda: BorrowingService.notify_about_overdue_return(borrowing))
+                response_data.update(
+                    {
+                        "message": (
+                            "Borrowing returned successfully, but it's overdue. "
+                            "Please pay the fine."
+                        ),
+                        "fine_payment_url": fine_payment.session_url,
+                        "fine_amount": fine_payment.money_to_pay,
+                    }
+                )
+                transaction.on_commit(
+                    lambda: BorrowingService.notify_about_overdue_return(borrowing)
+                )
             else:
-                transaction.on_commit(lambda: BorrowingService.notify_about_regular_return(borrowing))
+                transaction.on_commit(
+                    lambda: BorrowingService.notify_about_regular_return(borrowing)
+                )
 
             return Response(response_data, status=status.HTTP_200_OK)

@@ -63,11 +63,8 @@ class BorrowingService:
             f"📕 Book: {borrowing.book.title}\n"
             f"🗓 Return date: {borrowing.actual_return_date}\n"
         )
-        
-        send_telegram_message(
-            borrowing.user.telegram_chat_id,
-            message
-        )
+
+        send_telegram_message(borrowing.user.telegram_chat_id, message)
 
     @staticmethod
     def notify_about_overdue_return(borrowing: Borrowing) -> None:
@@ -75,7 +72,9 @@ class BorrowingService:
         if not borrowing.user.telegram_chat_id:
             return
 
-        fine_payment = borrowing.payments.filter(type='FINE').select_related('borrowing').first()
+        fine_payment = (
+            borrowing.payments.filter(type="FINE").select_related("borrowing").first()
+        )
         if not fine_payment:
             return
 
@@ -87,11 +86,11 @@ class BorrowingService:
             f"💰 Fine amount: ${fine_payment.money_to_pay}\n"
             f"Please use the button below to pay the fine"
         )
-        
+
         send_telegram_message(
             borrowing.user.telegram_chat_id,
             message,
-            payment_url=fine_payment.session_url
+            payment_url=fine_payment.session_url,
         )
 
     @staticmethod
@@ -105,4 +104,3 @@ class BorrowingService:
                 f"🗓Expected return date was: {borrowing.expected_return_date}"
             )
             send_telegram_message(borrowing.user.telegram_chat_id, message)
-
