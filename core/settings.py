@@ -196,3 +196,5 @@ PAYMENT_SUCCESS_URL = os.getenv(
 PAYMENT_CANCEL_URL = os.getenv(
     "PAYMENT_CANCEL_URL", "http://localhost:8000/api/payments/cancel/"
 )
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
