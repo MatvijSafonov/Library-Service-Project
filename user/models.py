@@ -42,6 +42,7 @@ class User(AbstractUser):
 
     username = None
     email = models.EmailField("email address", unique=True)
+    telegram_chat_id = models.CharField(max_length=63, blank=True, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
