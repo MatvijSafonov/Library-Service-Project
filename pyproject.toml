@@ -2,7 +2,7 @@
 name = "library-service-project"
 version = "0.1.0"
 description = "Library Management System API with book borrowing, payment and notification functionality."
-authors = ["Team Undead Unicorns"]
+authors = ["Undead Unicorns Team"]
 readme = "README.md"
 package-mode = false
 
