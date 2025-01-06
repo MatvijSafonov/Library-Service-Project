@@ -17,6 +17,10 @@ class PaymentCalculationService:
             (borrowing.actual_return_date - borrowing.expected_return_date).days,
             PaymentCalculationService.MAX_FINE_DAYS,
         )
+
+      #  daily_fee = Decimal(str(borrowing.book.daily_fee))
+      #  fine_multiplier = Decimal(str(settings.FINE_MULTIPLIER))
+      #  return (daily_fee * overdue_days * fine_multiplier).quantize(Decimal("0.01"))
         
         fine_multiplier = Decimal(str(settings.FINE_MULTIPLIER))
         daily_fee = borrowing.book.daily_fee
@@ -26,6 +30,7 @@ class PaymentCalculationService:
             * Decimal(str(overdue_days))
             * fine_multiplier
         ).quantize(Decimal("0.01"))
+
 
     @staticmethod
     def calculate_payment_amount(borrowing: Borrowing) -> Decimal:
