@@ -8,7 +8,9 @@ logger = logging.getLogger(__name__)
 
 
 def send_telegram_message(chat_id: str, message: str, payment_url: str = None) -> dict:
-    """Function for sending messages to users via Telegram with optional payment button."""
+    """
+    Function for sending messages to users via Telegram with optional payment button.
+    """
     payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
 
     if payment_url:
