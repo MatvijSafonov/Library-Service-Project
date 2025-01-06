@@ -90,7 +90,7 @@ class PrivateBookApiTests(TestCase):
         res = self.client.get(BOOKS_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(res.data), 2)
+        self.assertEqual(len(res.data["results"]), 2)
 
     def test_create_book_forbidden_for_non_admin(self):
         """
