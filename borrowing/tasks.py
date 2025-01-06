@@ -29,8 +29,8 @@ def send_telegram_message(message):
 @shared_task
 def check_overdue_borrowings():
     """
-    Checks for borrowings that are overdue and sends a notification 
-    to a Telegram chat for each overdue borrowing. If no overdue 
+    Checks for borrowings that are overdue and sends a notification
+    to a Telegram chat for each overdue borrowing. If no overdue
     borrowings are found, sends a notification indicating this.
     """
     today = now().date()

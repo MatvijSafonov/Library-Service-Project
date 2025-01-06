@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
             "telegram_chat_id",
             "first_name",
             "last_name",
-            "is_staff"
+            "is_staff",
         )
         read_only_fields = ("id", "is_staff")
         extra_kwargs = {

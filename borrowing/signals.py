@@ -4,6 +4,7 @@ from django.db import transaction
 from .models import Borrowing
 from .services import BorrowingService
 
+
 @receiver(post_save, sender=Borrowing)
 def borrowing_post_save(sender, instance, created, **kwargs):
     if created:

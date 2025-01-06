@@ -11,6 +11,7 @@ class BorrowingModelTests(TestCase):
     """
     Test suite for the Borrowing model.
     """
+
     def setUp(self):
         """
         Set up test data, including a test user, an author, and a book.

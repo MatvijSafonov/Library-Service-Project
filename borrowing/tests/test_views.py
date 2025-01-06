@@ -23,6 +23,7 @@ class PublicBorrowingApiTests(TestCase):
     """
     Test cases for unauthenticated access to the Borrowing API.
     """
+
     def setUp(self):
         """
         Set up the API client for unauthenticated requests.
@@ -41,6 +42,7 @@ class PrivateBorrowingApiTests(TestCase):
     """
     Test cases for authenticated access to the Borrowing API.
     """
+
     def setUp(self):
         """
         Set up the API client and create test data, including users, authors, and books.

@@ -97,12 +97,8 @@ class PaymentServiceTests(TestCase):
 
         self.assertEqual(payment.type, Payment.TypeChoices.PAYMENT)
         self.assertEqual(payment.status, Payment.StatusChoices.PENDING)
-        self.assertIn(
-            "https://checkout.stripe.com", payment.session_url
-        )
-        self.assertTrue(
-            payment.session_id.startswith("cs_test_")
-        )
+        self.assertIn("https://checkout.stripe.com", payment.session_url)
+        self.assertTrue(payment.session_id.startswith("cs_test_"))
 
     @patch("django.conf.settings.PAYMENT_SUCCESS_URL", "http://localhost/success/")
     @patch("django.conf.settings.PAYMENT_CANCEL_URL", "http://localhost/cancel/")

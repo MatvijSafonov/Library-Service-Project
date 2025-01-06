@@ -11,6 +11,7 @@ class BorrowingSerializerTests(TestCase):
     """
     Test cases for the BorrowingSerializer and BorrowingDetailSerializer.
     """
+
     def setUp(self):
         """
         Set up test data for the serializer tests, including users, authors, books, and borrowing data.
