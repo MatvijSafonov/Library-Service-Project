@@ -15,6 +15,7 @@ class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = BookPagination
+
     def get_serializer_class(self):
         if self.action == "list":
             return BookListSerializer

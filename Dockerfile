@@ -8,7 +8,7 @@
 
 ARG PYTHON_VERSION=3.12
 FROM python:${PYTHON_VERSION}-slim AS base
-LABEL maintainers="Team Undead Unicorns"
+LABEL maintainers="Undead Unicorns Team"
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
