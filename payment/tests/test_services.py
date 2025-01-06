@@ -36,7 +36,7 @@ class PaymentCalculationServiceTests(TestCase):
             expected_return_date=timezone.now().date() + timezone.timedelta(days=7),
         )
         amount = self.calculation_service.calculate_payment_amount(borrowing)
-        expected_amount = Decimal("70.00")  # 7 days * 10.00 daily fee
+        expected_amount = Decimal("70.00")
         self.assertEqual(amount, expected_amount)
 
     def test_calculate_fine_amount(self):
@@ -82,6 +82,17 @@ class PaymentServiceTests(TestCase):
         self.mock_stripe = MockStripeService.return_value
         self.payment_service = PaymentService()
 
+        self.stripe_session_patcher = patch("stripe.checkout.Session.create")
+        self.mock_stripe_session = self.stripe_session_patcher.start()
+
+        mock_session = MagicMock()
+        mock_session.url = "https://checkout.stripe.com/c/pay/test_session"
+        mock_session.id = "cs_test_mock_session_id"
+        self.mock_stripe_session.return_value = mock_session
+
+    def tearDown(self):
+        self.stripe_session_patcher.stop()
+
     @patch("django.conf.settings.PAYMENT_SUCCESS_URL", "http://localhost/success/")
     @patch("django.conf.settings.PAYMENT_CANCEL_URL", "http://localhost/cancel/")
     def test_create_payment_for_borrowing(self):
@@ -89,7 +100,7 @@ class PaymentServiceTests(TestCase):
         mock_request.build_absolute_uri.return_value = "http://localhost/"
         self.mock_stripe.create_payment_session.return_value = (
             "https://checkout.stripe.com/c/pay/test_session",
-            "test_session_id",
+            "cs_test_mock_session_id",
         )
 
         payment = self.payment_service.create_payment_for_borrowing(
@@ -99,7 +110,7 @@ class PaymentServiceTests(TestCase):
         self.assertEqual(payment.type, Payment.TypeChoices.PAYMENT)
         self.assertEqual(payment.status, Payment.StatusChoices.PENDING)
         self.assertIn("https://checkout.stripe.com", payment.session_url)
-        self.assertTrue(payment.session_id.startswith("cs_test_"))
+        self.assertEqual(payment.session_id, "cs_test_mock_session_id")
 
     @patch("django.conf.settings.PAYMENT_SUCCESS_URL", "http://localhost/success/")
     @patch("django.conf.settings.PAYMENT_CANCEL_URL", "http://localhost/cancel/")
@@ -108,7 +119,7 @@ class PaymentServiceTests(TestCase):
         mock_request.build_absolute_uri.return_value = "http://localhost/"
         self.mock_stripe.create_payment_session.return_value = (
             "https://checkout.stripe.com/c/pay/test_session",
-            "test_session_id",
+            "cs_test_mock_session_id",
         )
 
         self.borrowing.actual_return_date = (
@@ -123,4 +134,4 @@ class PaymentServiceTests(TestCase):
         self.assertEqual(payment.type, Payment.TypeChoices.FINE)
         self.assertEqual(payment.status, Payment.StatusChoices.PENDING)
         self.assertIn("https://checkout.stripe.com", payment.session_url)
-        self.assertTrue(payment.session_id.startswith("cs_test_"))
+        self.assertEqual(payment.session_id, "cs_test_mock_session_id")
