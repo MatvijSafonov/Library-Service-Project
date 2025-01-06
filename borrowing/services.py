@@ -56,7 +56,7 @@ class BorrowingService:
 
     @staticmethod
     def notify_about_regular_return(borrowing: Borrowing) -> None:
-        """Уведомление о своевременном возврате книги"""
+        """Notification about successful on-time book return"""
         if not borrowing.user.telegram_chat_id:
             return
 
@@ -70,7 +70,7 @@ class BorrowingService:
 
     @staticmethod
     def notify_about_overdue_return(borrowing: Borrowing) -> None:
-        """Уведомление о просроченном возврате книги со штрафом"""
+        """Notification about overdue book return with fine"""
         if not borrowing.user.telegram_chat_id:
             return
 
