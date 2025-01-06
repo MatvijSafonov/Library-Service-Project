@@ -1,12 +1,13 @@
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-from django.core.exceptions import ValidationError
 from decimal import Decimal
 
-from payment.models import Payment
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.test import TestCase
+from django.utils import timezone
+
 from borrowing.models import Borrowing
-from library.models import Book, Author
+from library.models import Author, Book
+from payment.models import Payment
 
 
 class PaymentModelTests(TestCase):

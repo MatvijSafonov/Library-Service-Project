@@ -1,15 +1,16 @@
+from decimal import Decimal
+from unittest.mock import patch
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-from unittest.mock import patch
-from decimal import Decimal
 
-from payment.models import Payment
 from borrowing.models import Borrowing
-from library.models import Book, Author
+from library.models import Author, Book
+from payment.models import Payment
 
 
 class PaymentViewSetTests(TestCase):

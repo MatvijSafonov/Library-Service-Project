@@ -1,15 +1,16 @@
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-from django.conf import settings
 from decimal import Decimal
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.utils import timezone
+
+from borrowing.models import Borrowing
+from library.models import Author, Book
+from payment.models import Payment
 from payment.services.calculation import PaymentCalculationService
 from payment.services.payment import PaymentService
-from payment.models import Payment
-from borrowing.models import Borrowing
-from library.models import Book, Author
 
 
 class PaymentCalculationServiceTests(TestCase):
@@ -97,12 +98,8 @@ class PaymentServiceTests(TestCase):
 
         self.assertEqual(payment.type, Payment.TypeChoices.PAYMENT)
         self.assertEqual(payment.status, Payment.StatusChoices.PENDING)
-        self.assertIn(
-            "https://checkout.stripe.com", payment.session_url
-        )
-        self.assertTrue(
-            payment.session_id.startswith("cs_test_")
-        )
+        self.assertIn("https://checkout.stripe.com", payment.session_url)
+        self.assertTrue(payment.session_id.startswith("cs_test_"))
 
     @patch("django.conf.settings.PAYMENT_SUCCESS_URL", "http://localhost/success/")
     @patch("django.conf.settings.PAYMENT_CANCEL_URL", "http://localhost/cancel/")

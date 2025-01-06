@@ -1,16 +1,17 @@
-from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 from django.utils import timezone
 
-from borrowing.serializers import BorrowingSerializer, BorrowingDetailSerializer
 from borrowing.models import Borrowing
-from library.models import Book, Author
+from borrowing.serializers import BorrowingDetailSerializer, BorrowingSerializer
+from library.models import Author, Book
 
 
 class BorrowingSerializerTests(TestCase):
     """
     Test cases for the BorrowingSerializer and BorrowingDetailSerializer.
     """
+
     def setUp(self):
         """
         Set up test data for the serializer tests, including users, authors, books, and borrowing data.

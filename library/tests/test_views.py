@@ -1,9 +1,10 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
+
 from library.models import Author, Book
-from django.contrib.auth import get_user_model
 
 BOOKS_URL = reverse("library:book-list")
 AUTHORS_URL = reverse("library:author-list")

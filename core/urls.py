@@ -15,12 +15,11 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
-from django.views.generic import RedirectView
+from django.urls import include, path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
-    SpectacularSwaggerView
+    SpectacularSwaggerView,
 )
 
 urlpatterns = [
@@ -29,11 +28,16 @@ urlpatterns = [
     path("api/users/", include("user.urls", namespace="user")),
     path("api/payments/", include("payment.urls", namespace="payment")),
     path("api/borrowings/", include("borrowing.urls", namespace="borrowing")),
-    path("", RedirectView.as_view(url="/api/library/books/", permanent=False)),
     path("__debug__/", include("debug_toolbar.urls")),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'),
-         name='swagger-ui'),
-    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'),
-         name='redoc'),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/docs/swagger/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger",
+    ),
+    path(
+        "api/docs/redoc/",
+        SpectacularRedocView.as_view(url_name="schema"),
+        name="redoc",
+    ),
 ]

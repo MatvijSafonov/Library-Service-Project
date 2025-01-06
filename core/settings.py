@@ -11,9 +11,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import os
-from dotenv import load_dotenv
 from datetime import timedelta
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -57,7 +58,6 @@ INSTALLED_APPS = [
     "user",
     "borrowing",
     "payment",
-    "notification",
 ]
 
 MIDDLEWARE = [
@@ -183,7 +183,7 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 60
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
-#Swagger settings
+# Swagger settings
 SPECTACULAR_SETTINGS = {
     "TITLE": "Library-Service-Project",
     "DESCRIPTION": "Your project description",
@@ -191,6 +191,9 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
-PAYMENT_SUCCESS_URL = os.getenv("PAYMENT_SUCCESS_URL", "http://localhost:8000/api/payments/success/")
-PAYMENT_CANCEL_URL = os.getenv("PAYMENT_CANCEL_URL", "http://localhost:8000/api/payments/cancel/")
-
+PAYMENT_SUCCESS_URL = os.getenv(
+    "PAYMENT_SUCCESS_URL", "http://localhost:8000/api/payments/success/"
+)
+PAYMENT_CANCEL_URL = os.getenv(
+    "PAYMENT_CANCEL_URL", "http://localhost:8000/api/payments/cancel/"
+)
