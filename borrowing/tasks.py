@@ -1,52 +1,46 @@
-import os
-
-import requests
 from celery import shared_task
 from django.utils.timezone import now
-from requests.exceptions import RequestException
+from django.contrib.auth import get_user_model
 
 from borrowing.models import Borrowing
-
-TELEGRAM_API_URL = (
-    f"https://api.telegram.org/bot{os.getenv('TELEGRAM_BOT_TOKEN')}/sendMessage"
-)
-CHAT_ID = os.getenv("CHAT_ID")
-
-
-def send_telegram_message(message):
-    """
-    Sends a message to a predefined Telegram chat.
-    """
-    try:
-        response = requests.post(
-            TELEGRAM_API_URL, data={"chat_id": CHAT_ID, "text": message}
-        )
-        response.raise_for_status()
-    except RequestException as e:
-        print(f"Error sending message to Telegram: {e}")
+from borrowing.services import send_telegram_message
 
 
 @shared_task
 def check_overdue_borrowings():
     """
-    Checks for borrowings that are overdue and sends a notification 
-    to a Telegram chat for each overdue borrowing. If no overdue 
-    borrowings are found, sends a notification indicating this.
+    Checks for borrowings that are overdue for each user and sends a notification
+    to a Telegram chat if they have overdue borrowings.
     """
     today = now().date()
-    overdue_borrowings = Borrowing.objects.filter(
-        expected_return_date__lte=today, actual_return_date__isnull=True
+    users_with_overdue_borrowings = (
+        Borrowing.objects.filter(
+            expected_return_date__lte=today, actual_return_date__isnull=True
+        ).values_list(
+            "user", flat=True
+        ).distinct()
     )
 
-    if overdue_borrowings.exists():
-        for borrowing in overdue_borrowings:
-            message = (
-                f"Overdue borrowing:\n"
-                f"Book: {borrowing.book.title}\n"
-                f"Borrowed by: {borrowing.user.email}\n"
-                f"Expected return date: {borrowing.expected_return_date}\n"
-                f"Daily fee: {borrowing.book.daily_fee}"
+    if not users_with_overdue_borrowings:
+        return
+
+    for user_id in users_with_overdue_borrowings:
+        user = get_user_model().objects.get(id=user_id)
+        if not user.telegram_chat_id:
+            continue
+
+        user_overdue_borrowings = Borrowing.objects.filter(
+            user=user,
+            expected_return_date__lte=today,
+            actual_return_date__isnull=True
+        )
+
+        message = "Overdue borrowings:\n"
+        for borrowing in user_overdue_borrowings:
+            message += (
+                f"\n-📕 Book: {borrowing.book.title}\n"
+                f"🗓 Expected return date: {borrowing.expected_return_date}\n"
+                f"💰 Daily fee: {borrowing.book.daily_fee}\n"
             )
-            send_telegram_message(message)
-    else:
-        send_telegram_message("No borrowings overdue today!")
+
+        send_telegram_message(user.telegram_chat_id, message)
