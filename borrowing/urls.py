@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from .views import BorrowingViewSet
+from borrowing.views import BorrowingViewSet
 
 router = routers.SimpleRouter()
 router.register("", BorrowingViewSet, basename="borrowing")

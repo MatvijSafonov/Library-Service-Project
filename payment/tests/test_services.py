@@ -1,15 +1,16 @@
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-from django.conf import settings
 from decimal import Decimal
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.utils import timezone
+
+from borrowing.models import Borrowing
+from library.models import Author, Book
+from payment.models import Payment
 from payment.services.calculation import PaymentCalculationService
 from payment.services.payment import PaymentService
-from payment.models import Payment
-from borrowing.models import Borrowing
-from library.models import Book, Author
 
 
 class PaymentCalculationServiceTests(TestCase):

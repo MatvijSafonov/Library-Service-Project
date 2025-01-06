@@ -3,6 +3,7 @@ from celery import shared_task
 from payment.models import Payment
 from payment.services.stripe import StripeService
 
+
 # TELEGRAM_API_URL = (
 #     f"https://api.telegram.org/bot" f"{os.getenv('TELEGRAM_BOT_TOKEN')}/sendMessage"
 # )
