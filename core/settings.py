@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "debug_toolbar",
     "django_celery_beat",
+    "drf_spectacular",
     # local apps
     "library",
     "user",
@@ -157,6 +158,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
@@ -180,3 +182,15 @@ CELERY_TIMEZONE = "UTC"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 60
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+#Swagger settings
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Library-Service-Project",
+    "DESCRIPTION": "Your project description",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
+
+PAYMENT_SUCCESS_URL = os.getenv("PAYMENT_SUCCESS_URL", "http://localhost:8000/api/payments/success/")
+PAYMENT_CANCEL_URL = os.getenv("PAYMENT_CANCEL_URL", "http://localhost:8000/api/payments/cancel/")
+

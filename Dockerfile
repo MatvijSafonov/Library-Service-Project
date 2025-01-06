@@ -29,11 +29,13 @@ RUN apt-get update && apt-get install -y \
     bash \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy dependency file.
-COPY requirements.txt requirements.txt
+# Copy dependency files.
+COPY pyproject.toml poetry.lock /app/
 
 # Install project dependencies.
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir poetry && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi --no-root
 
 # Copy the source code into the container.
 COPY . /app/

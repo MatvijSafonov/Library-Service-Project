@@ -2,6 +2,8 @@ import datetime
 from typing import Type
 
 import stripe
+
+
 from rest_framework import viewsets, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
@@ -10,6 +12,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.db import transaction
 
 from borrowing.models import Borrowing
 from borrowing.serializers import (
@@ -17,6 +20,7 @@ from borrowing.serializers import (
     BorrowingDetailSerializer,
 )
 from payment.services.payment import PaymentService
+from .services import BorrowingService
 
 
 class BorrowingPagination(PageNumberPagination):
@@ -53,6 +57,7 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @transaction.atomic
     def perform_create(self, serializer):
         user = self.request.user
         if Borrowing.objects.filter(user=user, actual_return_date=None).exists():
@@ -93,27 +98,77 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
         return response
 
-    @action(detail=True, methods=["POST", "GET"])
+    # @action(detail=True, methods=["POST", "GET"])
+    # def return_borrowing(self, request, pk=None):
+    #     borrowing = self.get_object()
+
+    #     if borrowing.actual_return_date:
+    #         raise ValidationError("This borrowing has already been returned.")
+
+    #     borrowing.actual_return_date = datetime.date.today()
+    #     borrowing.save()
+
+    #     book = borrowing.book
+    #     book.inventory += 1
+    #     book.save(update_fields=["inventory"])
+
+    #     if borrowing.actual_return_date > borrowing.expected_return_date:
+    #         try:
+    #             fine_payment = self.payment_service.create_fine_for_borrowing(
+    #                 borrowing=borrowing,
+    #                 request=self.request,
+    #             )
+    #             return Response(
+    #                 {
+    #                     "message": (
+    #                         "Borrowing returned successfully, but it's overdue. "
+    #                         "Please pay the fine."
+    #                     ),
+    #                     "fine_payment_url": fine_payment.session_url,
+    #                     "fine_amount": fine_payment.money_to_pay,
+    #                 },
+    #                 status=status.HTTP_200_OK,
+    #             )
+    #         except stripe.error.StripeError as error:
+    #             return Response(
+    #                 {
+    #                     "message": (
+    #                         "Borrowing returned successfully, "
+    #                         "but failed to create fine payment."
+    #                     ),
+    #                     "error": str(error),
+    #                 },
+    #                 status=status.HTTP_200_OK,
+    #             )
+
+    #     return Response(
+    #         {"message": "Borrowing returned successfully."},
+    #         status=status.HTTP_200_OK,
+    #     )
+
+    @action(detail=True, methods=["GET"])
     def return_borrowing(self, request, pk=None):
-        borrowing = self.get_object()
+        with transaction.atomic():
+            borrowing = self.get_object()
 
-        if borrowing.actual_return_date:
-            raise ValidationError("This borrowing has already been returned.")
+            if borrowing.actual_return_date:
+                raise ValidationError("This borrowing has already been returned.")
 
-        borrowing.actual_return_date = datetime.date.today()
-        borrowing.save()
+            borrowing.actual_return_date = datetime.date.today()
+            borrowing.save()
 
-        book = borrowing.book
-        book.inventory += 1
-        book.save(update_fields=["inventory"])
+            book = borrowing.book
+            book.inventory += 1
+            book.save(update_fields=["inventory"])
 
-        if borrowing.actual_return_date > borrowing.expected_return_date:
-            try:
+            response_data = {"message": "Borrowing returned successfully"}
+
+            if borrowing.actual_return_date > borrowing.expected_return_date:
                 fine_payment = self.payment_service.create_fine_for_borrowing(
                     borrowing=borrowing,
                     request=self.request,
                 )
-                return Response(
+                response_data.update(
                     {
                         "message": (
                             "Borrowing returned successfully, but it's overdue. "
@@ -121,22 +176,14 @@ class BorrowingViewSet(viewsets.ModelViewSet):
                         ),
                         "fine_payment_url": fine_payment.session_url,
                         "fine_amount": fine_payment.money_to_pay,
-                    },
-                    status=status.HTTP_200_OK,
+                    }
                 )
-            except stripe.error.StripeError as error:
-                return Response(
-                    {
-                        "message": (
-                            "Borrowing returned successfully, "
-                            "but failed to create fine payment."
-                        ),
-                        "error": str(error),
-                    },
-                    status=status.HTTP_200_OK,
+                transaction.on_commit(
+                    lambda: BorrowingService.notify_about_overdue_return(borrowing)
+                )
+            else:
+                transaction.on_commit(
+                    lambda: BorrowingService.notify_about_regular_return(borrowing)
                 )
 
-        return Response(
-            {"message": "Borrowing returned successfully."},
-            status=status.HTTP_200_OK,
-        )
+            return Response(response_data, status=status.HTTP_200_OK)
