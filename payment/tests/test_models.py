@@ -11,7 +11,13 @@ from payment.models import Payment
 
 
 class PaymentModelTests(TestCase):
+    """
+    Test suite for the Payment model.
+    """
     def setUp(self):
+        """
+        Set up initial test data including a user, author, book, and borrowing instance.
+        """
         self.user = get_user_model().objects.create_user(
             email="test@test.com", password="testpass123"
         )
@@ -31,6 +37,9 @@ class PaymentModelTests(TestCase):
         )
 
     def test_payment_str_representation(self):
+        """
+        Test the string representation of a Payment instance.
+        """
         payment = Payment.objects.create(
             status=Payment.StatusChoices.PENDING,
             type=Payment.TypeChoices.PAYMENT,
@@ -43,6 +52,9 @@ class PaymentModelTests(TestCase):
         self.assertEqual(str(payment), expected_str)
 
     def test_payment_creation_with_valid_data(self):
+        """
+        Test that a Payment instance is created successfully with valid data.
+        """
         payment = Payment.objects.create(
             status=Payment.StatusChoices.PENDING,
             type=Payment.TypeChoices.PAYMENT,
@@ -55,6 +67,9 @@ class PaymentModelTests(TestCase):
         self.assertEqual(payment.money_to_pay, Decimal("140.00"))
 
     def test_payment_validation_money_to_pay(self):
+        """
+        Test that a ValidationError is raised if money_to_pay is zero.
+        """
         with self.assertRaises(ValidationError):
             payment = Payment(
                 status=Payment.StatusChoices.PENDING,
@@ -65,6 +80,9 @@ class PaymentModelTests(TestCase):
             payment.full_clean()
 
     def test_payment_validation_paid_status_without_session_id(self):
+        """
+        Test that a ValidationError is raised if a paid Payment does not have a session_id.
+        """
         with self.assertRaises(ValidationError):
             payment = Payment(
                 status=Payment.StatusChoices.PAID,
@@ -75,6 +93,9 @@ class PaymentModelTests(TestCase):
             payment.full_clean()
 
     def test_payment_creation_with_session_data(self):
+        """
+        Test that a Payment instance is created successfully with session data.
+        """
         payment = Payment.objects.create(
             status=Payment.StatusChoices.PENDING,
             type=Payment.TypeChoices.PAYMENT,
