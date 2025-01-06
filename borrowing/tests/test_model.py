@@ -8,7 +8,13 @@ from library.models import Book, Author
 
 
 class BorrowingModelTests(TestCase):
+    """
+    Test suite for the Borrowing model.
+    """
     def setUp(self):
+        """
+        Set up test data, including a test user, an author, and a book.
+        """
         self.user = get_user_model().objects.create_user(
             email="test@test.com", password="testpass123"
         )
@@ -22,6 +28,9 @@ class BorrowingModelTests(TestCase):
         )
 
     def test_borrowing_str_representation(self):
+        """
+        Test the string representation of a Borrowing instance.
+        """
         borrowing = Borrowing.objects.create(
             user=self.user,
             book=self.book,
@@ -31,6 +40,9 @@ class BorrowingModelTests(TestCase):
         self.assertEqual(str(borrowing), expected_str)
 
     def test_borrowing_create_with_valid_dates(self):
+        """
+        Test that a Borrowing instance can be created with valid dates.
+        """
         borrowing = Borrowing.objects.create(
             user=self.user,
             book=self.book,
@@ -41,6 +53,10 @@ class BorrowingModelTests(TestCase):
         self.assertIsNone(borrowing.actual_return_date)
 
     def test_borrowing_constraint_expected_after_borrow(self):
+        """
+        Test that creating a Borrowing instance with an expected return date
+        before or equal to the borrow date raises an IntegrityError.
+        """
         with self.assertRaises(IntegrityError):
             Borrowing.objects.create(
                 user=self.user,
