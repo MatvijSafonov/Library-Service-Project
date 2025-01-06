@@ -1,8 +1,10 @@
-import requests
 import logging
-from django.utils import timezone
+
+import requests
 from django.conf import settings
-from .models import Borrowing
+from django.utils import timezone
+
+from borrowing.models import Borrowing
 
 logger = logging.getLogger(__name__)
 

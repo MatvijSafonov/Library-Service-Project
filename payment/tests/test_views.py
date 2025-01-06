@@ -1,19 +1,26 @@
+from decimal import Decimal
+from unittest.mock import patch
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-from unittest.mock import patch
-from decimal import Decimal
 
-from payment.models import Payment
 from borrowing.models import Borrowing
-from library.models import Book, Author
+from library.models import Author, Book
+from payment.models import Payment
 
 
 class PaymentViewSetTests(TestCase):
+    """
+    Test suite for the PaymentViewSet class, covering the payment-related endpoints.
+    """
     def setUp(self):
+        """
+        Set up initial test data, including users, book, borrowing, and payment instances.
+        """
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
             email="test@test.com", password="testpass123"
@@ -44,12 +51,18 @@ class PaymentViewSetTests(TestCase):
         )
 
     def test_list_payments_authenticated(self):
+        """
+        Test that authenticated users can list their payments.
+        """
         self.client.force_authenticate(user=self.user)
         response = self.client.get(reverse("payment:payment-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
     def test_list_payments_staff(self):
+        """
+        Test that staff users can list all payments.
+        """
         self.client.force_authenticate(user=self.staff_user)
         response = self.client.get(reverse("payment:payment-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -57,6 +70,9 @@ class PaymentViewSetTests(TestCase):
 
     @patch("payment.services.stripe.StripeService.verify_session")
     def test_payment_success(self, mock_verify_session):
+        """
+        Test that the payment status is updated to 'PAID' when the payment is successful.
+        """
         self.client.force_authenticate(user=self.user)
         mock_verify_session.return_value = True
         url = reverse("payment:payment-success")
@@ -68,6 +84,9 @@ class PaymentViewSetTests(TestCase):
         self.assertEqual(self.payment.status, Payment.StatusChoices.PAID)
 
     def test_payment_cancel(self):
+        """
+        Test that the payment status remains 'PENDING' when the payment is canceled.
+        """
         self.client.force_authenticate(user=self.user)
         url = reverse("payment:payment-cancel")
         response = self.client.get(
@@ -79,6 +98,9 @@ class PaymentViewSetTests(TestCase):
 
     @patch("payment.services.stripe.StripeService.create_payment_session")
     def test_renew_session(self, mock_create_session):
+        """
+        Test that the payment session URL and ID are updated when a session is renewed.
+        """
         mock_create_session.return_value = ("https://new.test.url", "new_session_id")
         self.client.force_authenticate(user=self.user)
         url = reverse("payment:payment-renew-session", args=[self.payment.id])

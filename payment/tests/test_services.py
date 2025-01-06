@@ -1,19 +1,26 @@
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-from django.conf import settings
 from decimal import Decimal
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.utils import timezone
+
+from borrowing.models import Borrowing
+from library.models import Author, Book
+from payment.models import Payment
 from payment.services.calculation import PaymentCalculationService
 from payment.services.payment import PaymentService
-from payment.models import Payment
-from borrowing.models import Borrowing
-from library.models import Book, Author
 
 
 class PaymentCalculationServiceTests(TestCase):
+    """
+    Test suite for the PaymentCalculationService class.
+    """
     def setUp(self):
+        """
+        Set up initial test data including a user, author, and book instance.
+        """
         self.user = get_user_model().objects.create_user(
             email="test@test.com", password="testpass123"
         )
@@ -28,6 +35,9 @@ class PaymentCalculationServiceTests(TestCase):
         self.calculation_service = PaymentCalculationService()
 
     def test_calculate_payment_amount(self):
+        """
+        Test that the payment amount is correctly calculated based on the borrowing period.
+        """
         borrowing = Borrowing.objects.create(
             user=self.user,
             book=self.book,
@@ -35,10 +45,13 @@ class PaymentCalculationServiceTests(TestCase):
             expected_return_date=timezone.now().date() + timezone.timedelta(days=7),
         )
         amount = self.calculation_service.calculate_payment_amount(borrowing)
-        expected_amount = Decimal("70.00")  # 7 days * 10.00 daily fee
+        expected_amount = Decimal("70.00")
         self.assertEqual(amount, expected_amount)
 
     def test_calculate_fine_amount(self):
+        """
+        Test that the fine amount is correctly calculated for late returns.
+        """
         borrow_date = timezone.now().date()
         expected_return_date = borrow_date + timezone.timedelta(days=7)
         actual_return_date = expected_return_date + timezone.timedelta(days=3)
@@ -60,8 +73,14 @@ class PaymentCalculationServiceTests(TestCase):
 
 
 class PaymentServiceTests(TestCase):
+    """
+    Test suite for the PaymentService class.
+    """
     @patch("payment.services.stripe.StripeService")
     def setUp(self, MockStripeService):
+        """
+        Set up initial test data, including a mock Stripe service.
+        """
         self.user = get_user_model().objects.create_user(
             email="test@test.com", password="testpass123"
         )
@@ -81,14 +100,28 @@ class PaymentServiceTests(TestCase):
         self.mock_stripe = MockStripeService.return_value
         self.payment_service = PaymentService()
 
+        self.stripe_session_patcher = patch("stripe.checkout.Session.create")
+        self.mock_stripe_session = self.stripe_session_patcher.start()
+
+        mock_session = MagicMock()
+        mock_session.url = "https://checkout.stripe.com/c/pay/test_session"
+        mock_session.id = "cs_test_mock_session_id"
+        self.mock_stripe_session.return_value = mock_session
+
+    def tearDown(self):
+        self.stripe_session_patcher.stop()
+
     @patch("django.conf.settings.PAYMENT_SUCCESS_URL", "http://localhost/success/")
     @patch("django.conf.settings.PAYMENT_CANCEL_URL", "http://localhost/cancel/")
     def test_create_payment_for_borrowing(self):
+        """
+        Test creating a payment session for borrowing.
+        """
         mock_request = MagicMock()
         mock_request.build_absolute_uri.return_value = "http://localhost/"
         self.mock_stripe.create_payment_session.return_value = (
             "https://checkout.stripe.com/c/pay/test_session",
-            "test_session_id",
+            "cs_test_mock_session_id",
         )
 
         payment = self.payment_service.create_payment_for_borrowing(
@@ -97,21 +130,20 @@ class PaymentServiceTests(TestCase):
 
         self.assertEqual(payment.type, Payment.TypeChoices.PAYMENT)
         self.assertEqual(payment.status, Payment.StatusChoices.PENDING)
-        self.assertIn(
-            "https://checkout.stripe.com", payment.session_url
-        )
-        self.assertTrue(
-            payment.session_id.startswith("cs_test_")
-        )
+        self.assertIn("https://checkout.stripe.com", payment.session_url)
+        self.assertEqual(payment.session_id, "cs_test_mock_session_id")
 
     @patch("django.conf.settings.PAYMENT_SUCCESS_URL", "http://localhost/success/")
     @patch("django.conf.settings.PAYMENT_CANCEL_URL", "http://localhost/cancel/")
     def test_create_fine_for_borrowing(self):
+        """
+        Test creating a fine payment session for late borrowing returns.
+        """
         mock_request = MagicMock()
         mock_request.build_absolute_uri.return_value = "http://localhost/"
         self.mock_stripe.create_payment_session.return_value = (
             "https://checkout.stripe.com/c/pay/test_session",
-            "test_session_id",
+            "cs_test_mock_session_id",
         )
 
         self.borrowing.actual_return_date = (
@@ -126,4 +158,4 @@ class PaymentServiceTests(TestCase):
         self.assertEqual(payment.type, Payment.TypeChoices.FINE)
         self.assertEqual(payment.status, Payment.StatusChoices.PENDING)
         self.assertIn("https://checkout.stripe.com", payment.session_url)
-        self.assertTrue(payment.session_id.startswith("cs_test_"))
+        self.assertEqual(payment.session_id, "cs_test_mock_session_id")

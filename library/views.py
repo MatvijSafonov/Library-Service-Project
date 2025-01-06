@@ -1,18 +1,20 @@
 from rest_framework import viewsets
 
-from library.models import Book, Author
-from library.permissions import IsAdminOrReadOnly  
+from library.models import Author, Book
+from library.pagination import BookPagination
+from library.permissions import IsAdminOrReadOnly
 from library.serializers import (
-    BookSerializer,
+    AuthorSerializer,
     BookDetailSerializer,
     BookListSerializer,
-    AuthorSerializer,
+    BookSerializer,
 )
 
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     permission_classes = [IsAdminOrReadOnly]
+    pagination_class = [BookPagination]
 
     def get_serializer_class(self):
         if self.action == "list":

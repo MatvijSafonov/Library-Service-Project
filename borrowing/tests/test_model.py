@@ -1,16 +1,17 @@
-from django.test import TestCase
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from django.db import IntegrityError
+from django.test import TestCase
+from django.utils import timezone
 
 from borrowing.models import Borrowing
-from library.models import Book, Author
+from library.models import Author, Book
 
 
 class BorrowingModelTests(TestCase):
     """
     Test suite for the Borrowing model.
     """
+
     def setUp(self):
         """
         Set up test data, including a test user, an author, and a book.

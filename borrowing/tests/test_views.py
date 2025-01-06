@@ -1,13 +1,14 @@
 from unittest.mock import patch
-from django.test import TestCase
+
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from borrowing.models import Borrowing
-from library.models import Book, Author
+from library.models import Author, Book
 
 BORROWING_URL = reverse("borrowing:borrowing-list")
 
@@ -23,6 +24,7 @@ class PublicBorrowingApiTests(TestCase):
     """
     Test cases for unauthenticated access to the Borrowing API.
     """
+
     def setUp(self):
         """
         Set up the API client for unauthenticated requests.
@@ -41,6 +43,7 @@ class PrivateBorrowingApiTests(TestCase):
     """
     Test cases for authenticated access to the Borrowing API.
     """
+
     def setUp(self):
         """
         Set up the API client and create test data, including users, authors, and books.

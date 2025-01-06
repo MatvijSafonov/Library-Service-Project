@@ -9,8 +9,9 @@ from borrowing.services import send_telegram_message
 @shared_task
 def check_overdue_borrowings():
     """
-    Checks for borrowings that are overdue for each user and sends a notification
-    to a Telegram chat if they have overdue borrowings.
+    Checks for borrowings that are overdue and sends a notification
+    to a Telegram chat for each overdue borrowing. If no overdue
+    borrowings are found, sends a notification indicating this.
     """
     today = now().date()
     users_with_overdue_borrowings = (
