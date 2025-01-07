@@ -130,7 +130,7 @@ The application will be available at:
 The application will be available at:
 - API: http://localhost:8000/api/v1/
 - Admin panel: http://localhost:8000/admin/
-- API Documentation (swagger): http://localhost:8000/api/v1/docs/swagger/
-- API Documentation (redoc): http://localhost:8000/api/v1/docs/redoc/
+- API Documentation (swagger): http://localhost:8000/api/docs/swagger/
+- API Documentation (redoc): http://localhost:8000/api/docs/redoc/
 - pgAdmin: http://localhost:5050/
 - RedisInsight: http://localhost:5540/
