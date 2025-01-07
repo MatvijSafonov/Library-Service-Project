@@ -10,7 +10,13 @@ from library.serializers import (
 
 
 class AuthorSerializerTests(TestCase):
+    """
+    Test suite for the AuthorSerializer.
+    """
     def setUp(self):
+        """
+        Set up data for the AuthorSerializer tests.
+        """
         self.author_data = {
             "first_name": "Test",
             "last_name": "Author",
@@ -18,6 +24,9 @@ class AuthorSerializerTests(TestCase):
         }
 
     def test_serializer_with_valid_data(self):
+        """
+        Test that the AuthorSerializer is valid with proper data and correctly saves an Author instance.
+        """
         serializer = AuthorSerializer(data=self.author_data)
         self.assertTrue(serializer.is_valid())
         author = serializer.save()
@@ -25,6 +34,9 @@ class AuthorSerializerTests(TestCase):
         self.assertEqual(author.last_name, self.author_data["last_name"])
 
     def test_serializer_with_empty_pseudonym(self):
+        """
+        Test that the AuthorSerializer is valid even when the 'pseudonym' field is omitted.
+        """
         data = self.author_data.copy()
         data.pop("pseudonym")
         serializer = AuthorSerializer(data=data)
@@ -32,7 +44,13 @@ class AuthorSerializerTests(TestCase):
 
 
 class BookSerializerTests(TestCase):
+    """
+    Test suite for the Book-related serializers.
+    """
     def setUp(self):
+        """
+        Set up data for the BookSerializer tests.
+        """
         self.author = Author.objects.create(first_name="Test", last_name="Author")
         self.book_data = {
             "title": "Test Book",
@@ -43,6 +61,9 @@ class BookSerializerTests(TestCase):
         }
 
     def test_book_serializer_with_valid_data(self):
+        """
+        Test that the BookSerializer is valid with proper data and correctly saves a Book instance.
+        """
         serializer = BookSerializer(data=self.book_data)
         self.assertTrue(serializer.is_valid())
         book = serializer.save()
@@ -50,6 +71,9 @@ class BookSerializerTests(TestCase):
         self.assertEqual(book.author.id, self.book_data["author"])
 
     def test_book_list_serializer(self):
+        """
+        Test that the BookListSerializer returns the correct serialized data for a Book instance.
+        """
         book = Book.objects.create(
             title="Test Book",
             author=self.author,
@@ -65,6 +89,9 @@ class BookSerializerTests(TestCase):
         self.assertEqual(data["author"]["last_name"], self.author.last_name)
 
     def test_book_detail_serializer(self):
+        """
+        Test that the BookDetailSerializer returns the correct detailed serialized data for a Book instance.
+        """
         book = Book.objects.create(
             title="Test Book",
             author=self.author,

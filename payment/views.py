@@ -41,42 +41,6 @@ class PaymentViewSet(
             queryset = queryset.filter(borrowing__user=self.request.user)
         return queryset
 
-    def _validate_payment_session(
-        self,
-        session_id: str | None,
-        payment_id: str | None,
-    ) -> tuple[Response | None, Payment | None]:
-        """Validate payment session parameters and get payment object."""
-        if not session_id or not payment_id:
-            return (
-                Response(
-                    {"error": "Missing session_id or payment_id"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                ),
-                None,
-            )
-
-        try:
-            payment = get_object_or_404(Payment, id=payment_id)
-        except Payment.DoesNotExist:
-            return (
-                Response(
-                    {"error": "Invalid payment_id"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                ),
-                None,
-            )
-
-        if payment.status == Payment.StatusChoices.PAID:
-            return (
-                Response(
-                    {"message": "Payment already processed"},
-                    status=status.HTTP_200_OK,
-                ),
-                None,
-            )
-
-        return None, payment
 
     @action(
         methods=["GET"],
