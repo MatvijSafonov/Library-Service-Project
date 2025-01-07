@@ -35,7 +35,6 @@ async def send_message_to_user(chat_id: int, text: str, bot: Bot):
 @router.message(CommandStart())
 async def send_welcome(message: Message):
     chat_id = message.chat.id
-    print(f"User chat_id: {chat_id}")
     await message.answer(
         f"Hello! Your chat_id is: {chat_id}", reply_markup=start_keyboard
     )
@@ -239,11 +238,13 @@ async def show_borrowings(callback: CallbackQuery, state: FSMContext):
         formatted_text = "📚 Your Borrowed Books:\n\n"
 
         for item in borrowings["results"]:
+            status_emoji = "✅" if item["actual_return_date"] else "❌"
             formatted_text += (
                 f"📖 Borrowing ID: {item['id']}\n"
                 f"📅 Borrow Date: {item['borrow_date']}\n"
                 f"⏳ Return Date: {item['expected_return_date']}\n"
-                f"✅ Returned: {item['actual_return_date'] or 'Not returned'}\n\n"
+                f"{status_emoji} Returned: "
+                f"{item['actual_return_date'] or 'Not returned'}\n\n"
             )
 
         keyboard = get_borrowings_pagination_keyboard(
