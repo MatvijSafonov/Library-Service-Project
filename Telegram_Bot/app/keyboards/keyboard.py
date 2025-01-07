@@ -33,13 +33,13 @@ def get_books_pagination_keyboard(
     if has_prev:
         buttons.append(
             InlineKeyboardButton(
-                text="⬅️ Previous", callback_data=f"books_page_{current_page-1}"
+                text="⬅️ Previous", callback_data=f"books_page_{current_page - 1}"
             )
         )
     if has_next:
         buttons.append(
             InlineKeyboardButton(
-                text="Next ➡️", callback_data=f"books_page_{current_page+1}"
+                text="Next ➡️", callback_data=f"books_page_{current_page + 1}"
             )
         )
     return InlineKeyboardMarkup(inline_keyboard=[buttons])
@@ -52,13 +52,13 @@ def get_borrowings_pagination_keyboard(
     if has_prev:
         buttons.append(
             InlineKeyboardButton(
-                text="⬅️ Previous", callback_data=f"borrow_page_{current_page-1}"
+                text="⬅️ Previous", callback_data=f"borrow_page_{current_page - 1}"
             )
         )
     if has_next:
         buttons.append(
             InlineKeyboardButton(
-                text="Next ➡️", callback_data=f"borrow_page_{current_page+1}"
+                text="Next ➡️", callback_data=f"borrow_page_{current_page + 1}"
             )
         )
     return InlineKeyboardMarkup(inline_keyboard=[buttons])

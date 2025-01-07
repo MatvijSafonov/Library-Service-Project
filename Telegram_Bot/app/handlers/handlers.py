@@ -20,6 +20,7 @@ from app.services.api import (
 
 router = Router()
 
+
 # Изменяем функции, использующие bot
 async def send_message_to_user(chat_id: int, text: str, bot: Bot):
     try:
@@ -83,7 +84,7 @@ async def get_help(message: Message, state: FSMContext):
     data = await state.get_data()
     token = data.get("jwt_token")
 
-    if (token):
+    if token:
         help_text = (
             "🟢 Status: Authorized\n"
             "Available commands:\n"
@@ -138,10 +139,8 @@ async def process_reg_password(message: Message, state: FSMContext):
 
     try:
         # Register user with chat_id
-        reg_response = await make_registration_request(
-            data["email"], 
-            data["password"],
-            str(message.chat.id)
+        reg_response = await make_registration_request(  # noqa
+            data["email"], data["password"], str(message.chat.id)
         )
         await message.answer("Successfully registered! ✅")
 
@@ -274,7 +273,8 @@ async def process_borrowings_page(callback: CallbackQuery, state: FSMContext):
                 f"📖 Borrowing ID: {item['id']}\n"
                 f"📅 Borrow Date: {item['borrow_date']}\n"
                 f"⏳ Return Date: {item['expected_return_date']}\n"
-                f"{status_emoji} Returned: {item['actual_return_date'] or 'Not returned'}\n\n"
+                f"{status_emoji} Returned: "
+                f"{item['actual_return_date'] or 'Not returned'}\n\n"
             )
 
         keyboard = get_borrowings_pagination_keyboard(
@@ -313,6 +313,7 @@ async def start_rent(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer("Enter book ID to rent:")
     await state.set_state(RentBook.book_id)
     await callback.answer()
+
 
 @router.message(StateFilter(RentBook.book_id))
 async def process_book_id(message: Message, state: FSMContext):
