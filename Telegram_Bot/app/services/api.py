@@ -6,7 +6,7 @@ async def make_login_request(email: str, password: str) -> Dict:
     async with aiohttp.ClientSession() as session:
         # API request for login
         async with session.post(
-            "http://127.0.0.1:8000/api/users/token/",
+            "http://app:8000/api/users/token/",
             json={"email": email, "password": password},
         ) as response:
             if response.status == 200:
@@ -19,7 +19,7 @@ async def make_registration_request(
 ) -> Dict:
     async with aiohttp.ClientSession() as session:
         async with session.post(
-            "http://127.0.0.1:8000/api/users/",
+            "http://app:8000/api/users/",
             json={
                 "email": email,
                 "password": password,
@@ -35,7 +35,7 @@ async def get_books(token: str, page: int = 1) -> Dict:
     headers = {"Authorize": f"Bearer {token}"}
     async with aiohttp.ClientSession() as session:
         async with session.get(
-            f"http://127.0.0.1:8000/api/library/books/?page={page}", headers=headers
+            f"http://app:8000/api/library/books/?page={page}", headers=headers
         ) as response:
             if response.status == 200:
                 return await response.json()
@@ -50,7 +50,7 @@ async def get_borrowings(token: str, page: int = 1) -> Dict:
     }
 
     async with aiohttp.ClientSession() as session:
-        url = f"http://127.0.0.1:8000/api/borrowings/?page={page}"
+        url = f"http://app:8000/api/borrowings/?page={page}"
         async with session.get(url, headers=headers) as response:
             if response.status == 200:
                 return await response.json()
@@ -66,7 +66,7 @@ async def rent_book(token: str, book_id: int, expected_return_date: str) -> Dict
 
     async with aiohttp.ClientSession() as session:
         async with session.post(
-            "http://127.0.0.1:8000/api/borrowings/", headers=headers, json=data
+            "http://app:8000/api/borrowings/", headers=headers, json=data
         ) as response:
             print(f"Debug - Status: {response.status}")  # Отладка статуса
             if response.status == 201:
