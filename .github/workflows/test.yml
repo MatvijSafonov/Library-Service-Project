@@ -12,9 +12,9 @@ jobs:
     timeout-minutes: 10
 
     env:
-      SECRET_KEY: django-insecure-test-key-for-github-actions
-      STRIPE_PUBLIC_KEY: test_public_key
-      STRIPE_SECRET_KEY: test_secret_key
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
 
     steps:
       - name: Checkout repo
