@@ -18,10 +18,6 @@ class PaymentCalculationService:
             PaymentCalculationService.MAX_FINE_DAYS,
         )
 
-        #  daily_fee = Decimal(str(borrowing.book.daily_fee))
-        #  fine_multiplier = Decimal(str(settings.FINE_MULTIPLIER))
-        #  return (daily_fee * overdue_days * fine_multiplier).quantize(Decimal("0.01"))
-
         fine_multiplier = Decimal(str(settings.FINE_MULTIPLIER))
         daily_fee = borrowing.book.daily_fee
 
