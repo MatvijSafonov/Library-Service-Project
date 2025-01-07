@@ -35,7 +35,6 @@ async def send_message_to_user(chat_id: int, text: str, bot: Bot):
 @router.message(CommandStart())
 async def send_welcome(message: Message):
     chat_id = message.chat.id
-    print(f"User chat_id: {chat_id}")
     await message.answer(
         f"Hello! Your chat_id is: {chat_id}", reply_markup=start_keyboard
     )
