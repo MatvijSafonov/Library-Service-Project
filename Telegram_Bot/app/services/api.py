@@ -1,7 +1,7 @@
 import aiohttp
 from typing import Dict
 
-from conf.settings import API_BASE_URL
+from Telegram_Bot.conf.settings import API_BASE_URL
 
 
 async def make_login_request(email: str, password: str) -> Dict:
