@@ -3,14 +3,14 @@ from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from app.keyboards.keyboard import (
+from Telegram_Bot.app.keyboards.keyboard import (
     menu,
     start_keyboard,
     get_books_pagination_keyboard,
     get_borrowings_pagination_keyboard,
 )
-from app.states.states import Login, Reg, RentBook
-from app.services.api import (
+from Telegram_Bot.app.states.states import Login, Reg, RentBook
+from Telegram_Bot.app.services.api import (
     make_login_request,
     get_books,
     make_registration_request,
