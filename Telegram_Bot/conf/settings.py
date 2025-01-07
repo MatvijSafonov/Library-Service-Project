@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+API_BASE_URL = "http://app:8000/api"
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
 
