@@ -15,6 +15,13 @@ services:
       redis:
         condition: service_healthy
     restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
 
   db:
     image: postgres:17-alpine
@@ -51,8 +58,14 @@ services:
       - .env
     depends_on:
       app:
-        condition: service_started
+        condition: service_healthy
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A core inspect ping -d celery@$$HOSTNAME"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   celery_beat:
     build: .
@@ -64,8 +77,14 @@ services:
       - .env
     depends_on:
       app:
-        condition: service_started
+        condition: service_healthy
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A core inspect ping -d celery@$$HOSTNAME"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   pgadmin:
     image: dpage/pgadmin4
@@ -78,25 +97,44 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-0", "-", "http://localhost:80/misc/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   redisinsight:
     image: redislabs/redisinsight:latest
     ports:
       - "5540:5540"
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5540/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   telegram_bot:
     build: .
     command: python -m bot
     working_dir: /app/Telegram_bot
     environment:
-      - PYTHONPATH=/app/Telegram_Bot
+      - PYTHONPATH=/app
     volumes:
       - ./:/app
     env_file:
       - .env
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[p]ython -m bot' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   pgdata:
