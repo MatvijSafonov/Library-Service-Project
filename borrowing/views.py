@@ -82,9 +82,6 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             )
             self.payment_session_url = payment.session_url
         except stripe.error.StripeError as error:
-            book.inventory += 1
-            book.save(update_fields=["inventory"])
-            borrowing.delete()
             raise ValidationError(f"Failed to create payment: {str(error)}")
 
     def create(self, request: Request, *args, **kwargs) -> Response:
