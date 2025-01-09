@@ -12,7 +12,7 @@ dp = Dispatcher(storage=storage)
 
 
 # Function for setting commands
-async def set_commands(bot: Bot):
+async def set_commands(bot: Bot) -> None:
     commands = [
         BotCommand(command="start", description="Start working with bot"),
         BotCommand(command="menu", description="Show menu"),
@@ -24,7 +24,7 @@ async def set_commands(bot: Bot):
     await bot.set_my_commands(commands)
 
 
-async def reset_bot(bot: Bot):
+async def reset_bot(bot: Bot) -> None:
     # Delete webhook and clear updates queue
     await bot.delete_webhook(drop_pending_updates=True)
     # Delete bot commands
@@ -33,7 +33,7 @@ async def reset_bot(bot: Bot):
     await storage.close()
 
 
-async def main():
+async def main() -> None:
     try:
         dp.include_router(router)
         setup_logging()
