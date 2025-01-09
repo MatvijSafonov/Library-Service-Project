@@ -17,6 +17,7 @@ class PaymentCalculationServiceTests(TestCase):
     """
     Test suite for the PaymentCalculationService class.
     """
+
     def setUp(self):
         """
         Set up initial test data including a user, author, and book instance.
@@ -76,6 +77,7 @@ class PaymentServiceTests(TestCase):
     """
     Test suite for the PaymentService class.
     """
+
     @patch("payment.services.stripe.StripeService")
     def setUp(self, MockStripeService):
         """

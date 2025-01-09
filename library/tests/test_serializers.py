@@ -13,6 +13,7 @@ class AuthorSerializerTests(TestCase):
     """
     Test suite for the AuthorSerializer.
     """
+
     def setUp(self):
         """
         Set up data for the AuthorSerializer tests.
@@ -47,6 +48,7 @@ class BookSerializerTests(TestCase):
     """
     Test suite for the Book-related serializers.
     """
+
     def setUp(self):
         """
         Set up data for the BookSerializer tests.

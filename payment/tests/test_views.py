@@ -17,6 +17,7 @@ class PaymentViewSetTests(TestCase):
     """
     Test suite for the PaymentViewSet class, covering the payment-related endpoints.
     """
+
     def setUp(self):
         """
         Set up initial test data, including users, book, borrowing, and payment instances.
