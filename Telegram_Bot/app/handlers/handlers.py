@@ -21,7 +21,7 @@ from Telegram_Bot.app.services.api import (
 router = Router()
 
 
-# Изменяем функции, использующие bot
+# Function to send messages using bot instance
 async def send_message_to_user(chat_id: int, text: str, bot: Bot) -> bool:
     try:
         await bot.send_message(chat_id=chat_id, text=text)
@@ -74,7 +74,7 @@ async def process_password(message: Message, state: FSMContext) -> None:
 # Handler for command /menu
 @router.message(Command("menu"))
 async def show_menu(message: Message) -> None:
-    await message.answer("Меню", reply_markup=menu)
+    await message.answer("Menu", reply_markup=menu)
 
 
 # Handler for command /help
