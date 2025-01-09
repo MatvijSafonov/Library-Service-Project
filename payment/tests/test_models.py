@@ -14,6 +14,7 @@ class PaymentModelTests(TestCase):
     """
     Test suite for the Payment model.
     """
+
     def setUp(self):
         """
         Set up initial test data including a user, author, book, and borrowing instance.

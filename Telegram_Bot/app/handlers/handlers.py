@@ -21,8 +21,8 @@ from Telegram_Bot.app.services.api import (
 router = Router()
 
 
-# Изменяем функции, использующие bot
-async def send_message_to_user(chat_id: int, text: str, bot: Bot):
+# Function to send messages using bot instance
+async def send_message_to_user(chat_id: int, text: str, bot: Bot) -> bool:
     try:
         await bot.send_message(chat_id=chat_id, text=text)
         return True
@@ -33,7 +33,7 @@ async def send_message_to_user(chat_id: int, text: str, bot: Bot):
 
 # Handler for command /start------------------------------------------------------------
 @router.message(CommandStart())
-async def send_welcome(message: Message):
+async def send_welcome(message: Message) -> None:
     chat_id = message.chat.id
     await message.answer(
         f"Hello! Your chat_id is: {chat_id}", reply_markup=start_keyboard
@@ -42,20 +42,20 @@ async def send_welcome(message: Message):
 
 # Handler for command /login------------------------------------------------------------
 @router.message(Command("login"))
-async def cmd_login(message: Message, state: FSMContext):
+async def cmd_login(message: Message, state: FSMContext) -> None:
     await message.answer("Enter your email:")
     await state.set_state(Login.email)
 
 
 @router.message(StateFilter(Login.email))
-async def process_email(message: Message, state: FSMContext):
+async def process_email(message: Message, state: FSMContext) -> None:
     await state.update_data(email=message.text)
     await message.answer("Now enter your password:")
     await state.set_state(Login.password)
 
 
 @router.message(StateFilter(Login.password))
-async def process_password(message: Message, state: FSMContext):
+async def process_password(message: Message, state: FSMContext) -> None:
     await state.update_data(password=message.text)
     data = await state.get_data()
 
@@ -73,13 +73,13 @@ async def process_password(message: Message, state: FSMContext):
 
 # Handler for command /menu
 @router.message(Command("menu"))
-async def show_menu(message: Message):
-    await message.answer("Меню", reply_markup=menu)
+async def show_menu(message: Message) -> None:
+    await message.answer("Menu", reply_markup=menu)
 
 
 # Handler for command /help
 @router.message(Command("help"))
-async def get_help(message: Message, state: FSMContext):
+async def get_help(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     token = data.get("jwt_token")
 
@@ -106,7 +106,7 @@ async def get_help(message: Message, state: FSMContext):
 
 # Handler for command /contacts
 @router.message(Command("contacts"))
-async def get_contacts(message: Message):
+async def get_contacts(message: Message) -> None:
     await message.answer(
         """
 📞 Phone: +380123456789
@@ -119,20 +119,20 @@ async def get_contacts(message: Message):
 
 # Handler for registration--------------------------------------------------------------
 @router.message(Command("reg"))
-async def register(message: Message, state: FSMContext):
+async def register(message: Message, state: FSMContext) -> None:
     await state.set_state(Reg.email)
     await message.answer("Enter your email for registration:")
 
 
 @router.message(StateFilter(Reg.email))
-async def process_reg_email(message: Message, state: FSMContext):
+async def process_reg_email(message: Message, state: FSMContext) -> None:
     await state.update_data(email=message.text)
     await message.answer("Enter your password:")
     await state.set_state(Reg.password)
 
 
 @router.message(StateFilter(Reg.password))
-async def process_reg_password(message: Message, state: FSMContext):
+async def process_reg_password(message: Message, state: FSMContext) -> None:
     await state.update_data(password=message.text)
     data = await state.get_data()
 
@@ -156,7 +156,7 @@ async def process_reg_password(message: Message, state: FSMContext):
 
 # Handler for command "📚 All Books"----------------------------------------------------
 @router.callback_query(F.data == "all_books")
-async def show_books(callback: CallbackQuery, state: FSMContext):
+async def show_books(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
     token = data.get("jwt_token")
 
@@ -186,7 +186,7 @@ async def show_books(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(lambda c: c.data.startswith("books_page_"))
-async def process_books_page(callback: CallbackQuery, state: FSMContext):
+async def process_books_page(callback: CallbackQuery, state: FSMContext) -> None:
     page = int(callback.data.split("_")[2])
     data = await state.get_data()
     token = data.get("jwt_token")
@@ -213,19 +213,19 @@ async def process_books_page(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data == "login")
-async def login_button(callback: CallbackQuery, state: FSMContext):
+async def login_button(callback: CallbackQuery, state: FSMContext) -> None:
     await cmd_login(callback.message, state)
     await callback.answer()
 
 
 @router.callback_query(F.data == "reg")
-async def register_button(callback: CallbackQuery, state: FSMContext):
+async def register_button(callback: CallbackQuery, state: FSMContext) -> None:
     await register(callback.message, state)
     await callback.answer()
 
 
 @router.callback_query(F.data == "my_books")
-async def show_borrowings(callback: CallbackQuery, state: FSMContext):
+async def show_borrowings(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
     token = data.get("jwt_token")
 
@@ -259,7 +259,7 @@ async def show_borrowings(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(lambda c: c.data.startswith("borrow_page_"))
-async def process_borrowings_page(callback: CallbackQuery, state: FSMContext):
+async def process_borrowings_page(callback: CallbackQuery, state: FSMContext) -> None:
     page = int(callback.data.split("_")[2])
     data = await state.get_data()
     token = data.get("jwt_token")
@@ -289,7 +289,7 @@ async def process_borrowings_page(callback: CallbackQuery, state: FSMContext):
 
 
 @router.message(StateFilter(RentBook.return_date))
-async def process_return_date(message: Message, state: FSMContext):
+async def process_return_date(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     try:
         await rent_book(data["jwt_token"], int(data["book_id"]), message.text)
@@ -303,7 +303,7 @@ async def process_return_date(message: Message, state: FSMContext):
 
 
 @router.callback_query(F.data == "rent_book")
-async def start_rent(callback: CallbackQuery, state: FSMContext):
+async def start_rent(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
     token = data.get("jwt_token")
 
@@ -317,7 +317,7 @@ async def start_rent(callback: CallbackQuery, state: FSMContext):
 
 
 @router.message(StateFilter(RentBook.book_id))
-async def process_book_id(message: Message, state: FSMContext):
+async def process_book_id(message: Message, state: FSMContext) -> None:
     try:
         book_id = int(message.text)
         await state.update_data(book_id=book_id)

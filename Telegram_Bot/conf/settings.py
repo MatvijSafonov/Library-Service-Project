@@ -12,7 +12,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
 
 
-def setup_logging():
+def setup_logging() -> None:
     """
     Set up logging configuration for the application.
 

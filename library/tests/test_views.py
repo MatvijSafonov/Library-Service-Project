@@ -52,6 +52,7 @@ class PublicBookApiTests(TestCase):
     """
     Test unauthenticated requests to the Book API.
     """
+
     def setUp(self):
         """
         Set up API client for public tests.
@@ -70,6 +71,7 @@ class PrivateBookApiTests(TestCase):
     """
     Test authenticated requests to the Book API.
     """
+
     def setUp(self):
         """
         Set up an authenticated user and API client for private tests.
@@ -112,6 +114,7 @@ class AdminBookApiTests(TestCase):
     """
     Test requests to the Book API as an admin user.
     """
+
     def setUp(self):
         """
         Set up an authenticated admin user and API client for admin tests.

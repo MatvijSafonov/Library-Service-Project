@@ -8,6 +8,7 @@ class AuthorModelTests(TestCase):
     """
     Test suite for the Author model.
     """
+
     def setUp(self):
         """
         Set up data for the Author model tests.
@@ -61,6 +62,7 @@ class BookModelTests(TestCase):
     """
     Test suite for the Book model.
     """
+
     def setUp(self):
         """
         Set up data for the Book model tests.

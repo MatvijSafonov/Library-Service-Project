@@ -41,7 +41,6 @@ class PaymentViewSet(
             queryset = queryset.filter(borrowing__user=self.request.user)
         return queryset
 
-
     @action(
         methods=["GET"],
         detail=False,
