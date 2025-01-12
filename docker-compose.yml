@@ -1,0 +1,142 @@
+services:
+  app:
+    build:
+      context: .
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+
+  db:
+    image: postgres:17-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  celery_worker:
+    build: .
+    command: celery -A core worker -l info
+    volumes:
+      - ./:/app
+      - celery_data:/app/celerybeat
+    env_file:
+      - .env
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A core inspect ping -d celery@$$HOSTNAME"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  celery_beat:
+    build: .
+    command: celery -A core beat -l info --schedule=/app/celerybeat/celerybeat-schedule
+    volumes:
+      - ./:/app
+      - celery_data:/app/celerybeat
+    env_file:
+      - .env
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A core inspect ping -d celery@$$HOSTNAME"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  pgadmin:
+    image: dpage/pgadmin4
+    env_file:
+      - .env
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-0", "-", "http://localhost:80/misc/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    ports:
+      - "5540:5540"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5540/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  telegram_bot:
+    build: .
+    command: python -m bot
+    working_dir: /app/Telegram_bot
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - ./:/app
+    env_file:
+      - .env
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[p]ython -m bot' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  pgdata:
+  pgadmin_data:
+  celery_data:

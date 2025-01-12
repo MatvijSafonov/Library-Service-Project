@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "library-service-project"
+version = "0.1.0"
+description = "Library Management System API with book borrowing, payment and notification functionality."
+authors = ["Undead Unicorns Team"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.1.4"
+djangorestframework = "^3.15.2"
+djangorestframework-simplejwt = "^5.3.1"
+celery = "^5.4.0"
+django-celery-beat = "^2.7.0"
+drf-spectacular = "^0.28.0"
+python-dotenv = "^1.0.1"
+psycopg2-binary = "^2.9.10"
+redis = "^5.2.1"
+stripe = "^11.4.1"
+requests = "^2.32.3"
+aiogram = "^3.17.0"
+betterlogging = "^1.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+flake8 = "^7.1.1"
+flake8-pyproject = "^1.2.3"
+django-debug-toolbar = "^4.4.6"
+
+[tool.black]
+extend-exclude = "migrations"
+
+[tool.flake8]
+inline-quotes = "\""
+ignore = ["E203", "E266", "W503", "N807", "N818", "F401"]
+max-line-length = 88
+max-complexity = 18
+select = ["B", "C", "E", "F", "W", "T4", "B9", "Q0", "N8", "VNE"]
+exclude = [
+    "**migrations",
+    "*venv",
+    "tests",
+    "settings.py"
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
